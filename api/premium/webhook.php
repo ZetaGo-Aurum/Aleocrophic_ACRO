@@ -46,8 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $input = file_get_contents('php://input');
 $signature = $_SERVER['HTTP_X_TRAKTEER_HASH'] ?? '';
 
-// Verifikasi Signature (Hanya jika token dikonfigurasi dan bukan default)
-if ($TRAKTEER_TOKEN && $TRAKTEER_TOKEN !== 'your_token_here' && $TRAKTEER_TOKEN !== 'trhook-nZcr7Rquyhir9iiFDpVuWfoF') {
+// Verifikasi Signature (Hanya jika token dikonfigurasi dan bukan placeholder)
+if ($TRAKTEER_TOKEN && $TRAKTEER_TOKEN !== 'your_token_here') {
     // Note: Trakteer documentation might specify how to verify signature. 
     // Assuming standard HMAC SHA256 logic here if they provide X-Trakteer-Hash.
     // If not provided by Trakteer, this block might be skipped or adjusted.
