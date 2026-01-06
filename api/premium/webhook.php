@@ -82,9 +82,16 @@ try {
     }
     
     if (empty($supporterEmail)) {
-        // If still empty, return 200 to Trakteer but log error to avoid retries
-        http_response_code(200); 
-        echo json_encode(['status' => 'ignored', 'message' => 'Supporter email is missing.']);
+        // Log the 403-like permission/auth error details for analysis
+        error_log("[AUTH_ERROR] 403 Forbidden - Missing Supporter Email. Trace ID: sin1::x45sd-1767693552917-8aead5bb9be2");
+        
+        // Return 403 Forbidden to signal permission/auth issue back to Trakteer
+        http_response_code(403); 
+        echo json_encode([
+            'status' => 'error', 
+            'message' => 'Forbidden: Supporter email is required for license generation.',
+            'trace_id' => 'sin1::x45sd-1767693552917-8aead5bb9be2'
+        ]);
         exit;
     }
 

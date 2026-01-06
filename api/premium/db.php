@@ -39,10 +39,14 @@ function getDbConnection() {
     $pass = getenv('DB_PASSWORD');
 
     if (!$host || !$dbname || !$user || !$pass) {
-        throw new Exception("Database configuration missing in environment variables.");
+        // Fallback to SQLite if Postgres env vars are missing (for local testing or small deployments)
+        $sqlitePath = __DIR__ . '/../../database.sqlite';
+        $dsn = "sqlite:$sqlitePath";
+        $user = null;
+        $pass = null;
+    } else {
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require";
     }
-
-    $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require";
     
     try {
         $pdo = new PDO($dsn, $user, $pass, [
@@ -77,7 +81,7 @@ function initDatabase() {
     $pdo = getDbConnection();
     $sql = "
     CREATE TABLE IF NOT EXISTS orders (
-        id SERIAL PRIMARY KEY,
+        id " . (strpos($pdo->getAttribute(PDO::ATTR_DRIVER_NAME), 'sqlite') !== false ? "INTEGER PRIMARY KEY AUTOINCREMENT" : "SERIAL PRIMARY KEY") . ",
         supporter_name VARCHAR(255),
         supporter_email VARCHAR(255) NOT NULL,
         quantity INTEGER,

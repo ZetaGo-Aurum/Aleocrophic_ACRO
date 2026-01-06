@@ -1,4 +1,53 @@
 /**
+<<<<<<< Updated upstream
+=======
+ * Handle Image Loading Errors
+ * Replaces broken images with a fallback placeholder
+ */
+/**
+ * Global Image Handling & Optimization
+ */
+function handleImageError(event) {
+    const img = event.target;
+    if (img && !img.dataset.retry) {
+        console.warn(`[IMAGE_LOAD_ERROR] Failed to load image: ${img.src}`);
+        img.dataset.retry = "true";
+        // Caching optimization: Use a reliable placeholder service with cache headers
+        img.src = 'https://via.placeholder.com/400x200?text=IMAGE+NOT+FOUND';
+        img.alt = 'GAGAL LOAD IMAGE';
+        img.classList.add('image-fallback');
+    }
+}
+
+// Add caching hint for dynamically loaded images
+function optimizeImage(img) {
+    if (img && !img.hasAttribute('loading')) {
+        img.setAttribute('loading', 'lazy');
+        img.setAttribute('decoding', 'async');
+    }
+}
+
+window.addEventListener('error', function(event) {
+    if (event.target.tagName === 'IMG') {
+        handleImageError(event);
+    }
+}, true);
+
+// Observe DOM for new images to optimize
+const imageObserver = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+            if (node.tagName === 'IMG') optimizeImage(node);
+            if (node.querySelectorAll) {
+                node.querySelectorAll('img').forEach(optimizeImage);
+            }
+        });
+    });
+});
+imageObserver.observe(document.body, { childList: true, subtree: true });
+
+/**
+>>>>>>> Stashed changes
  * Log errors to a monitoring service (simulated)
  * @param {string} type - Error type (e.g., 'API_ERROR', 'UI_ERROR')
  * @param {string} message - Error message

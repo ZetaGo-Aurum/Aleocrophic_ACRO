@@ -31,7 +31,13 @@ Author: Aleocrophic Team
 <br>
 
 <div align="center">
-  <p><b>Aleocrophic Payments</b> adalah infrastruktur internal yang dirancang untuk mengotomatiskan distribusi license key produk digital. Proyek ini berfungsi sebagai jembatan antara platform pembayaran resmi dan pengguna akhir, memastikan setiap transaksi divalidasi dan diproses secara real-time untuk memberikan akses layanan premium kepada pengguna.</p>
+  <p><b>Aleocrophic Payments</b> adalah infrastruktur internal yang dirancang untuk mengotomatiskan distribusi license key produk digital. Proyek ini berfungsi sebagai jembatan antara platform pembayaran resmi dan pengguna akhir.</p>
+  
+  <p>⚠️ <b>PENTING:</b> Fitur utama tersedia di <b>PRO tanpa PLUS</b>. Edisi <b>PRO+</b> dan <b>ULTIMATE</b> adalah paket tambahan (add-on) dan license key. Anda <b>WAJIB</b> mendownload base system <b>ACRO OS ubuntu-modded</b> dari GitHub sebelum menggunakan license key.</p>
+  
+  <a href="https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO">
+    <img src="https://img.shields.io/badge/DOWNLOAD-ACRO_OS_UBUNTU--MODDED-blue?style=for-the-badge&logo=github" alt="Download Base OS">
+  </a>
 </div>
 
 <br>
