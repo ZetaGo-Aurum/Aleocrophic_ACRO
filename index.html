@@ -295,7 +295,7 @@
                     input: 'text-center'
                 },
                 preConfirm: (email) => {
-                    return fetch(`check-status.php?email=${encodeURIComponent(email)}`)
+                    return fetch(`/api/check-status.php?email=${encodeURIComponent(email)}`)
                         .then(response => {
                             const contentType = response.headers.get("content-type");
                             if (!contentType || !contentType.includes("application/json")) {

@@ -1,17 +1,25 @@
 {
   "functions": {
-    "ACRO PREMIUM/*.php": {
+    "api/*.php": {
       "runtime": "vercel-php@0.7.0"
     }
   },
   "routes": [
     {
+      "src": "/webhook",
+      "dest": "/api/webhook.php"
+    },
+    {
+      "src": "/check-status",
+      "dest": "/api/check-status.php"
+    },
+    {
       "src": "/ACRO PREMIUM/webhook",
-      "dest": "/ACRO PREMIUM/webhook.php"
+      "dest": "/api/webhook.php"
     },
     {
       "src": "/ACRO PREMIUM/check-status",
-      "dest": "/ACRO PREMIUM/check-status.php"
+      "dest": "/api/check-status.php"
     },
     {
       "src": "/(.*)",

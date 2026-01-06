@@ -1,17 +1,17 @@
 [build]
-  publish = "ACRO PREMIUM"
+  publish = "."
 
 [build.environment]
   PHP_VERSION = "8.2"
 
 [[redirects]]
   from = "/webhook"
-  to = "/webhook.php"
+  to = "/api/webhook.php"
   status = 200
 
 [[redirects]]
   from = "/check-status"
-  to = "/check-status.php"
+  to = "/api/check-status.php"
   status = 200
 
 # Note: Netlify requires a specific setup (like a build plugin or custom runtime) 
