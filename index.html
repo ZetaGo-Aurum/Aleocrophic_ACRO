@@ -64,16 +64,16 @@
 <body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 selection:bg-material-primary selection:text-acro-dark overflow-x-hidden">
 
     <!-- Navbar Simple -->
-    <nav class="fixed top-0 w-full p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center max-w-7xl z-50 gap-4 sm:gap-0 bg-[#0f0f13]/80 backdrop-blur-md sm:bg-transparent">
-        <div class="flex items-center gap-3">
+    <nav class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center z-[1000] gap-4 sm:gap-0 bg-[#0f0f13]/80 backdrop-blur-md sm:bg-transparent transition-all duration-300">
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-start">
             <div class="w-10 h-10 bg-gradient-to-tr from-material-primary to-purple-600 rounded-full flex items-center justify-center text-acro-dark font-bold text-xl shadow-lg shadow-purple-500/30">A</div>
             <span class="font-bold text-xl tracking-tight text-white">Aleocrophic</span>
         </div>
-        <div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
-             <button onclick="checkOrderStatus()" class="text-sm font-bold text-material-tertiary hover:text-white transition-all flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-material-tertiary/30 hover:bg-material-tertiary/10 active:scale-95 w-full sm:w-auto">
-                <i class="fas fa-search"></i> Cek Status / Claim Key
+        <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+             <button onclick="checkOrderStatus()" class="text-xs sm:text-sm font-bold text-material-tertiary hover:text-white transition-all flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full border border-material-tertiary/30 hover:bg-material-tertiary/10 active:scale-95 flex-1 sm:flex-none">
+                <i class="fas fa-search"></i> Cek Status
             </button>
-             <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu" target="_blank" rel="noopener noreferrer" class="text-white hover:text-material-primary transition-colors text-2xl" title="View Source on GitHub">
+             <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu" target="_blank" rel="noopener noreferrer" class="text-white hover:text-material-primary transition-colors text-xl sm:text-2xl p-2" title="View Source on GitHub">
                 <i class="fab fa-github"></i>
             </a>
         </div>
@@ -135,9 +135,11 @@
         <!-- Right: Pricing Cards -->
         <div id="pricing" class="relative w-full space-y-8 sm:space-y-10 lg:space-y-6">
 
-            <!-- Blur Glow Effect -->
-            <div class="absolute -top-20 -right-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob pointer-events-none"></div>
-            <div class="absolute top-1/2 -left-20 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
+            <!-- Blur Glow Effect Container -->
+            <div class="bg-blob-container">
+                <div class="absolute -top-20 -right-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob pointer-events-none"></div>
+                <div class="absolute top-1/2 -left-20 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
+            </div>
 
             <!-- Tier 1: Pro+ -->
             <div class="glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden ring-1 ring-white/10 hover:ring-material-primary/50 transition-all duration-300 group">
