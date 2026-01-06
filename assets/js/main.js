@@ -107,3 +107,132 @@ async function fetchGitHubReadme(retryCount = 0, branch = 'main') {
         }
     }
 }
+
+/**
+ * Check Order Status / Claim Key
+ * Triggered by the "Cek Status" button in the navbar
+ */
+async function checkOrderStatus() {
+    try {
+        const { value: email } = await Swal.fire({
+            title: 'Cek Status Pembayaran',
+            input: 'email',
+            inputLabel: 'Masukkan alamat email Trakteer kamu',
+            inputPlaceholder: 'user@example.com',
+            showCancelButton: true,
+            confirmButtonText: 'Cek Sekarang',
+            cancelButtonText: 'Batal',
+            background: '#1a1a24',
+            color: '#ffffff',
+            inputAttributes: {
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            },
+            customClass: {
+                popup: 'glass-card border border-white/10 rounded-[2rem]',
+                confirmButton: 'btn-material bg-material-primary text-acro-dark font-bold px-6 py-2 rounded-full',
+                cancelButton: 'text-gray-400 hover:text-white transition-colors'
+            }
+        });
+
+        if (!email) return;
+
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Mencari data lisensi untuk ' + email,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+            background: '#1a1a24',
+            color: '#ffffff'
+        });
+
+        const response = await fetch(`api/ACRO PREMIUM/check-status.php?email=${encodeURIComponent(email)}`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            const data = result.data;
+            Swal.fire({
+                title: 'Lisensi Ditemukan!',
+                html: `
+                    <div class="text-left space-y-3 mt-4">
+                        <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Supporter</p>
+                            <p class="font-bold text-material-primary">${data.supporter_name}</p>
+                        </div>
+                        <div class="p-3 bg-white/5 rounded-xl border border-white/10">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Tier Edition</p>
+                            <p class="font-bold text-white">${data.tier}</p>
+                        </div>
+                        <div class="p-4 bg-material-primary/10 rounded-xl border border-material-primary/30 relative group">
+                            <p class="text-[10px] text-material-primary uppercase tracking-widest mb-1">License Key</p>
+                            <code id="license-key" class="font-mono text-lg text-material-primary font-bold break-all">${data.license_key}</code>
+                            <button onclick="copyToClipboard('${data.license_key}')" class="absolute top-2 right-2 text-material-primary hover:text-white transition-colors" title="Copy Key">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-gray-500 text-center italic mt-4">Terima kasih telah mendukung pengembangan Aleocrophic!</p>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Tutup',
+                background: '#1a1a24',
+                color: '#ffffff',
+                customClass: {
+                    popup: 'glass-card border border-white/10 rounded-[2rem]',
+                    confirmButton: 'btn-material bg-material-primary text-acro-dark font-bold px-6 py-2 rounded-full'
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'Gagal',
+                text: result.message || 'Data tidak ditemukan.',
+                icon: 'error',
+                background: '#1a1a24',
+                color: '#ffffff',
+                customClass: {
+                    popup: 'glass-card border border-white/10 rounded-[2rem]',
+                    confirmButton: 'btn-material bg-red-500 text-white font-bold px-6 py-2 rounded-full'
+                }
+            });
+        }
+    } catch (error) {
+        logErrorToService('CHECK_STATUS_ERROR', error.message);
+        Swal.fire({
+            title: 'Error',
+            text: 'Terjadi kesalahan sistem. Silakan coba lagi nanti.',
+            icon: 'error',
+            background: '#1a1a24',
+            color: '#ffffff'
+        });
+    }
+}
+
+/**
+ * Utility to copy text to clipboard
+ */
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Key berhasil disalin!',
+            showConfirmButton: false,
+            timer: 2000,
+            background: '#1a1a24',
+            color: '#ffffff'
+        });
+    });
+}
+
+// Make functions available globally for onclick events
+window.checkOrderStatus = checkOrderStatus;
+window.copyToClipboard = copyToClipboard;
+window.fetchGitHubReadme = fetchGitHubReadme;
+
+// Initial load
+document.addEventListener('DOMContentLoaded', () => {
+    fetchGitHubReadme();
+});
