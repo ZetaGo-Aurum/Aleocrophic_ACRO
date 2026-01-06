@@ -3,7 +3,8 @@ const path = require('path');
 
 function validateVercelConfig() {
     console.log('--- Validating Vercel Configuration ---');
-    const vercelConfigPath = path.join(__dirname, '..', 'vercel.json');
+    const projectRoot = path.join(__dirname, '..');
+    const vercelConfigPath = path.join(projectRoot, 'vercel.json');
     
     if (!fs.existsSync(vercelConfigPath)) {
         console.error('❌ vercel.json not found!');
@@ -16,13 +17,41 @@ function validateVercelConfig() {
     // Validate Functions
     if (config.functions) {
         for (const pattern in config.functions) {
-            const dir = pattern.split('/')[0];
-            const fullDir = path.join(__dirname, '..', dir);
-            if (!fs.existsSync(fullDir)) {
-                console.error(`❌ Function pattern "${pattern}" references non-existent directory: ${dir}`);
-                errors++;
+            console.log(`Checking function pattern: "${pattern}"`);
+            
+            // Extract the directory part of the pattern (e.g., "api/ACRO PREMIUM/")
+            const patternParts = pattern.split('/');
+            const wildcardIndex = patternParts.findIndex(part => part.includes('*'));
+            
+            if (wildcardIndex !== -1) {
+                const dirPath = patternParts.slice(0, wildcardIndex).join('/');
+                const fullDirPath = path.join(projectRoot, dirPath);
+                const extension = patternParts[wildcardIndex].replace('*', '');
+
+                if (!fs.existsSync(fullDirPath)) {
+                    console.error(`❌ Directory not found for pattern: ${dirPath}`);
+                    errors++;
+                } else {
+                    // Check if there are any files with the extension in that directory
+                    const files = fs.readdirSync(fullDirPath);
+                    const matchingFiles = files.filter(f => f.endsWith(extension));
+                    
+                    if (matchingFiles.length === 0) {
+                        console.error(`❌ No files matching "${extension}" found in "${dirPath}"`);
+                        errors++;
+                    } else {
+                        console.log(`✅ Found ${matchingFiles.length} matching file(s) in "${dirPath}"`);
+                    }
+                }
             } else {
-                console.log(`✅ Function directory "${dir}" exists.`);
+                // Direct file path check
+                const fullPath = path.join(projectRoot, pattern);
+                if (!fs.existsSync(fullPath)) {
+                    console.error(`❌ Function file not found: ${pattern}`);
+                    errors++;
+                } else {
+                    console.log(`✅ Function file exists: ${pattern}`);
+                }
             }
         }
     }
@@ -31,7 +60,7 @@ function validateVercelConfig() {
     if (config.routes) {
         config.routes.forEach((route, index) => {
             if (route.dest && route.dest.startsWith('/') && !route.dest.includes('$')) {
-                const filePath = path.join(__dirname, '..', route.dest.substring(1));
+                const filePath = path.join(projectRoot, route.dest.substring(1));
                 if (!fs.existsSync(filePath)) {
                     console.error(`❌ Route ${index} destination "${route.dest}" does not exist.`);
                     errors++;
