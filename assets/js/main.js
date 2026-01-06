@@ -1,4 +1,26 @@
 /**
+ * Handle Image Loading Errors
+ * Replaces broken images with a fallback placeholder
+ */
+function handleImageError(event) {
+    const img = event.target;
+    if (img && !img.dataset.retry) {
+        console.warn(`[IMAGE_LOAD_ERROR] Failed to load image: ${img.src}`);
+        img.dataset.retry = "true";
+        img.src = 'https://via.placeholder.com/400x200?text=IMAGE+NOT+FOUND';
+        img.alt = 'GAGAL LOAD IMAGE';
+        img.classList.add('image-fallback');
+    }
+}
+
+// Global listener for image errors
+window.addEventListener('error', function(event) {
+    if (event.target.tagName === 'IMG') {
+        handleImageError(event);
+    }
+}, true);
+
+/**
  * Log errors to a monitoring service (simulated)
  * @param {string} type - Error type (e.g., 'API_ERROR', 'UI_ERROR')
  * @param {string} message - Error message

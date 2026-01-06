@@ -124,6 +124,19 @@ body {
 .github-content a { color: #6C63FF; text-decoration: none; }
 .github-content a:hover { text-decoration: underline; }
 .github-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0; }
+
+/* Image Fallback Styles */
+.image-fallback {
+    border: 2px dashed rgba(255,255,255,0.1) !important;
+    background: rgba(0,0,0,0.2);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #6C63FF;
+    font-weight: bold;
+}
 .github-content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
 .github-content th, .github-content td { border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; text-align: left; }
 .github-content th { background: rgba(255,255,255,0.05); color: #d0bcff; }
