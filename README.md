@@ -39,16 +39,18 @@ Author: Aleocrophic Team
 
 <table align="center">
   <tr>
-    <td align="center" width="300">
+    <td align="center" width="350" valign="top">
       <br>
-      <h3>1 ACRON</h3>
-      <p><b>Rp62.500</b></p>
+      <h3>PRO+ EDITION</h3>
+      <p><b>Rp62.500 (1 ACRON)</b></p>
       <img src="https://img.shields.io/badge/Tier-PRO+-blue?style=for-the-badge" alt="Pro+ Badge">
       <br><br>
       <ul align="left">
-        <li>Akses Fitur Premium PRO+</li>
-        <li>Update Rutin v3.x</li>
-        <li>Support Standar</li>
+        <li>✅ <b>GPU Gaming Optimization</b><br><small>Optimalisasi performa GPU untuk gaming</small></li>
+        <li>✅ <b>Gaming Emulators</b><br><small>Dukungan lengkap PPSSPP, Dolphin, RetroArch</small></li>
+        <li>✅ <b>10+ Premium Themes</b><br><small>Koleksi tema eksklusif</small></li>
+        <li>✅ <b>Performance Tweaks</b><br><small>Penyempurnaan sistem maksimal</small></li>
+        <li>✅ <b>Extra Configurations</b><br><small>Konfigurasi tambahan terbaik</small></li>
       </ul>
       <br>
       <a href="https://trakteer.id/aleocrophic/tip?quantity=1">
@@ -56,17 +58,20 @@ Author: Aleocrophic Team
       </a>
       <br><br>
     </td>
-    <td align="center" width="300">
+    <td align="center" width="350" valign="top">
       <br>
-      <h3>2 ACRON</h3>
-      <p><b>Rp125.000</b></p>
+      <h3>ULTIMATE EDITION</h3>
+      <p><b>Rp125.000 (2 ACRON)</b></p>
       <img src="https://img.shields.io/badge/Value-BEST_VALUE-gold?style=for-the-badge" alt="Best Value">
       <br><br>
       <ul align="left">
-        <li>Akses Fitur <b>Ultimate</b></li>
-        <li>Prioritas Update v4.x</li>
-        <li>Prioritas Support 24/7</li>
-        <li>Cloud Sync Enabled</li>
+        <li>🔥 <b>SEMUA FITUR PRO+ PLUS:</b></li>
+        <li>🛡️ <b>Penetration Testing Suite</b><br><small>Nmap, Wireshark, Hydra, SQLmap</small></li>
+        <li>💻 <b>Metasploit Framework</b><br><small>Platform testing keamanan terkemuka</small></li>
+        <li>🔒 <b>Privacy Tools</b><br><small>Tor, VPN, Enkripsi data</small></li>
+        <li>👨‍💻 <b>Developer Pro Pack</b><br><small>AWS/Azure CLI, Terraform, Ansible</small></li>
+        <li>🔄 <b>Lifetime Updates</b><br><small>Pemberitahuan pembaruan seumur hidup</small></li>
+        <li>⚡ <b>VIP Support</b><br><small>Respons garansi 6 jam</small></li>
       </ul>
       <br>
       <a href="https://trakteer.id/aleocrophic/tip?quantity=2">
@@ -76,6 +81,14 @@ Author: Aleocrophic Team
     </td>
   </tr>
 </table>
+
+<div align="center">
+  <p>
+    <b>CATATAN PENTING:</b><br>
+    🔹 Semua unit ACRO telah diupgrade menjadi <b>ACRON</b> | 🔹 Harga sudah termasuk <b>PPN</b><br>
+    🔹 <b>Garansi 30 hari</b> uang kembali | 🔹 Dukungan multi-platform (<b>Windows, Linux, MacOS</b>)
+  </p>
+</div>
 
 <br>
 
