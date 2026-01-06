@@ -3,7 +3,17 @@
   "version": "1.0.0",
   "description": "Payment processing system with Trakteer integration",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "test:config": "node scripts/validate-config.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "engines": {
     "node": ">=20.0.0"

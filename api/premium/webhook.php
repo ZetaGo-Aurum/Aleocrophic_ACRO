@@ -82,15 +82,29 @@ try {
     }
     
     if (empty($supporterEmail)) {
+        // Check if it's a test webhook from Trakteer
+        $isTest = isset($data['test']) && $data['test'] == true;
+        
+        if ($isTest) {
+            error_log("[WEBHOOK_TEST] Trakteer Test Webhook received successfully.");
+            http_response_code(200);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Test webhook received successfully. No license generated because email is missing.'
+            ]);
+            exit;
+        }
+
         // Log the 403-like permission/auth error details for analysis
-        error_log("[AUTH_ERROR] 403 Forbidden - Missing Supporter Email. Trace ID: sin1::x45sd-1767693552917-8aead5bb9be2");
+        $traceId = 'sin1::' . bin2hex(random_bytes(8)) . '-' . time();
+        error_log("[AUTH_ERROR] 403 Forbidden - Missing Supporter Email. Trace ID: $traceId. Payload: " . json_encode($data));
         
         // Return 403 Forbidden to signal permission/auth issue back to Trakteer
         http_response_code(403); 
         echo json_encode([
             'status' => 'error', 
             'message' => 'Forbidden: Supporter email is required for license generation.',
-            'trace_id' => 'sin1::x45sd-1767693552917-8aead5bb9be2'
+            'trace_id' => $traceId
         ]);
         exit;
     }

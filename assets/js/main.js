@@ -147,6 +147,172 @@ async function fetchGitHubReadme(retryCount = 0, branch = 'main') {
 }
 
 /**
+ * Check Order Status - Triggered by Navbar button
+ * Implements input validation, error handling, and async flow
+ */
+async function checkOrderStatus() {
+    try {
+        const { value: formValues } = await Swal.fire({
+            title: 'Cek Status Lisensi',
+            html:
+                '<div class="space-y-4 text-left">' +
+                '<div>' +
+                '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email Pembeli</label>' +
+                '<input id="swal-input1" class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-material-primary outline-none" placeholder="email@contoh.com">' +
+                '</div>' +
+                '<div>' +
+                '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Order ID / Reference</label>' +
+                '<input id="swal-input2" class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-material-primary outline-none" placeholder="TRK-XXXXX atau Order ID">' +
+                '</div>' +
+                '</div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Periksa Sekarang',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#00e676',
+            background: '#1a1a1e',
+            color: '#ffffff',
+            preConfirm: () => {
+                const email = document.getElementById('swal-input1').value;
+                const orderId = document.getElementById('swal-input2').value;
+                
+                // Validation
+                if (!email || !orderId) {
+                    Swal.showValidationMessage('Harap isi email dan Order ID');
+                    return false;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    Swal.showValidationMessage('Format email tidak valid');
+                    return false;
+                }
+                
+                return { email, orderId };
+            }
+        });
+
+        if (formValues) {
+            const { email, orderId } = formValues;
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Memproses...',
+                text: 'Sedang memverifikasi status pembayaran Anda',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                background: '#1a1a1e',
+                color: '#ffffff'
+            });
+
+            // Perform the check with retry mechanism
+            await performLicenseCheck(email, orderId);
+        }
+    } catch (error) {
+        logErrorToService('UI_ERROR', 'checkOrderStatus flow failed', { error: error.message });
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan',
+            text: 'Gagal membuka form pengecekan. Silakan coba lagi.',
+            background: '#1a1a1e',
+            color: '#ffffff'
+        });
+    }
+}
+
+/**
+ * Perform License Check with Retry Mechanism & Exponential Backoff
+ */
+async function performLicenseCheck(email, orderId, retryCount = 0) {
+    const MAX_RETRIES = 3;
+    const baseDelay = 1000;
+
+    try {
+        const response = await fetch(`./api/premium/check-status.php?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`);
+        
+        if (response.status === 403) {
+            throw new Error('FORBIDDEN');
+        }
+
+        if (!response.ok && response.status !== 404) {
+            throw new Error(`HTTP_${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            const licenseKey = data.license_key || (data.data && data.data.license_key);
+            
+            if (!licenseKey) {
+                throw new Error('LICENSE_KEY_MISSING');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Lisensi Ditemukan!',
+                html: `
+                    <div class="text-left space-y-4">
+                        <p class="text-sm text-gray-300">Pembayaran Anda telah diverifikasi. Berikut adalah lisensi Anda:</p>
+                        <div class="bg-black/40 p-4 rounded-lg border border-material-primary/30">
+                            <code class="text-material-primary font-mono text-lg break-all select-all">${licenseKey}</code>
+                        </div>
+                        <p class="text-[10px] text-gray-500 italic">* Simpan kode ini dengan baik. Jangan bagikan kepada orang lain.</p>
+                    </div>
+                `,
+                confirmButtonText: 'Salin & Tutup',
+                confirmButtonColor: '#00e676',
+                background: '#1a1a1e',
+                color: '#ffffff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigator.clipboard.writeText(licenseKey);
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Belum Ada Lisensi',
+                text: data.message || 'Pembayaran Anda mungkin masih dalam proses atau data tidak ditemukan.',
+                confirmButtonText: 'Mengerti',
+                background: '#1a1a1e',
+                color: '#ffffff'
+            });
+        }
+
+    } catch (error) {
+        if (retryCount < MAX_RETRIES && (error.message.startsWith('HTTP_5') || error.message === 'Failed to fetch')) {
+            const delay = Math.pow(2, retryCount) * baseDelay;
+            console.warn(`[RETRY] Attempt ${retryCount + 1} for ${email}. Delaying ${delay}ms`);
+            
+            setTimeout(() => performLicenseCheck(email, orderId, retryCount + 1), delay);
+        } else {
+            logErrorToService('API_ERROR', 'License check failed after retries', { 
+                error: error.message, 
+                email, 
+                orderId,
+                retryCount 
+            });
+
+            let errorTitle = 'Pengecekan Gagal';
+            let errorMessage = 'Gagal terhubung ke server. Silakan coba beberapa saat lagi.';
+
+            if (error.message === 'FORBIDDEN') {
+                errorTitle = 'Akses Ditolak (403)';
+                errorMessage = 'Server menolak permintaan Anda. Harap pastikan Anda tidak menggunakan VPN atau Proxy.';
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: errorTitle,
+                text: errorMessage,
+                background: '#1a1a1e',
+                color: '#ffffff'
+            });
+        }
+    }
+}
+
+/**
  * Check License Status via API
  */
 async function checkLicenseStatus(email, orderId) {

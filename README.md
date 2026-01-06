@@ -186,6 +186,57 @@ Author: Aleocrophic Team
 
 <br>
 
+---
+
+<h2 id="setup-guide" align="center">🛠️ Setup & Configuration Guide</h2>
+
+### 📋 Prerequisites
+Sebelum memulai, pastikan server Anda memenuhi persyaratan berikut:
+- **PHP 8.1+** dengan ekstensi: `json`, `pdo`, `pdo_sqlite`, `curl`.
+- **Web Server** (Nginx/Apache) atau **Vercel** (direkomendasikan).
+- **SQLite** (default) atau **PostgreSQL** untuk database.
+
+### ⚙️ Environment Variables
+Konfigurasikan variabel lingkungan berikut (di `.env` atau Dashboard Vercel):
+
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `TRAKTEER_TOKEN` | Token webhook dari dashboard Trakteer | `trhook-xxxxx...` |
+| `DB_CONNECTION` | Driver database (sqlite/pgsql) | `sqlite` |
+| `DB_DATABASE` | Nama database atau path file sqlite | `database.sqlite` |
+| `ADMIN_PASSWORD` | Password untuk dashboard admin | `securepassword` |
+
+### 🚀 Quick Start
+1. **Clone Repository:**
+   ```bash
+   git clone https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO.git
+   cd Aleocrophic_ACRO
+   ```
+2. **Configure Config:**
+   Edit file `api/premium/config.php` dan masukkan token Trakteer Anda.
+3. **Deploy:**
+   - **Vercel:** Jalankan `vercel` di root direktori.
+   - **Local:** Pastikan direktori `api/premium/` memiliki izin tulis untuk SQLite.
+
+### 🔌 Webhook Setup (Trakteer)
+1. Masuk ke Dashboard Trakteer -> Integrasi -> Webhook.
+2. Masukkan URL: `https://domain-anda.com/api/premium/webhook.php`.
+3. Pilih metode **POST**.
+4. Salin **Webhook Token** ke konfigurasi Anda.
+
+---
+
+<h2 id="troubleshooting" align="center">🔍 Troubleshooting</h2>
+
+| Masalah | Solusi |
+| :--- | :--- |
+| **Error 403 Forbidden** | Pastikan `TRAKTEER_TOKEN` sudah benar dan domain Anda tidak memblokir user-agent Trakteer. Periksa juga apakah email supporter terkirim di payload. |
+| **Gagal Generate Lisensi** | Periksa izin tulis (write permission) pada folder `api/premium/` jika menggunakan SQLite. Pastikan database sudah terinisialisasi. |
+| **Cek Status Selalu Gagal** | Pastikan Order ID yang dimasukkan sesuai dengan yang ada di email notifikasi Trakteer (format: `TRK-XXXXX`). |
+| **Webhook Tidak Masuk** | Verifikasi URL di dashboard Trakteer dan pastikan SSL (HTTPS) sudah aktif dan valid. |
+
+---
+
 <h2 id="kontak" align="center">📧 Kontak & Dukungan</h2>
 
 <div align="center">
