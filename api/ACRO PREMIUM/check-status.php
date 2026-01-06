@@ -1,6 +1,15 @@
 <?php
 // check-status.php - API endpoint to check license status
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
+
+// Handle Preflight Request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Global error handler to ensure JSON response
 set_exception_handler(function ($e) {
@@ -36,15 +45,18 @@ if (empty($email)) {
 try {
     $pdo = getDbConnection();
     
-    // Ambil semua license untuk email tersebut
+    // Ambil semua license untuk email tersebut, urutkan dari yang terbaru
     $stmt = $pdo->prepare("SELECT supporter_name, tier, license_key, created_at FROM orders WHERE supporter_email = ? ORDER BY created_at DESC");
     $stmt->execute([$email]);
     $results = $stmt->fetchAll();
 
     if (count($results) > 0) {
+        // Return the latest license as the main data object to match frontend expectation
+        // We could also return all history in a separate field if needed
         echo json_encode([
             'status' => 'success',
-            'data' => $results
+            'data' => $results[0], // Ambil yang paling baru
+            'history' => $results // Opsional: kirim history lengkap
         ]);
     } else {
         http_response_code(404);

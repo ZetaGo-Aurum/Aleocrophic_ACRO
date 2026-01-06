@@ -5,6 +5,9 @@ body {
         radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
         radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
     color: #e6e1e5;
+    /* Prevent horizontal scroll */
+    overflow-x: hidden;
+    width: 100%;
 }
 .glass-card {
     background: rgba(30, 27, 38, 0.6);
@@ -68,4 +71,25 @@ body {
     margin: 10px 0;
     word-break: break-all;
     cursor: pointer;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    /* Disable heavy animations on mobile */
+    .animate-blob {
+        animation: none !important;
+        opacity: 0.1 !important;
+    }
+    
+    /* Adjust glass card padding */
+    .glass-card {
+        backdrop-filter: blur(8px); /* Reduce blur calculation */
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Prevent overflow issues */
+    .swal2-popup {
+        width: 90% !important;
+        margin: auto;
+    }
 }
