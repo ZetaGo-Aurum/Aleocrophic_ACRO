@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Official ACRON Payment Gateway for Aleocrophic Modded Ubuntu. Secure, fast, and exclusive for elites.">
     <title>Aleocrophic Payments | Premium Access</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Preload Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- External CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SweetAlert2 untuk Notifikasi Keren -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
     
     <script>
         tailwind.config = {
@@ -42,78 +51,9 @@
             }
         }
     </script>
-    <style>
-        body {
-            background-color: #0f0f13;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-            color: #e6e1e5;
-        }
-        .glass-card {
-            background: rgba(30, 27, 38, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-        .btn-material {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-material:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(208, 188, 255, 0.5);
-        }
-        
-        /* SweetAlert Custom Dark Theme */
-        .swal2-popup {
-            background: #1e1b26 !important;
-            color: #e6e1e5 !important;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px !important;
-            padding: 1.5rem !important;
-            width: 95% !important;
-            max-width: 450px !important;
-        }
-        .swal2-title {
-            color: #d0bcff !important;
-            font-size: 1.5rem !important;
-            font-weight: 700 !important;
-        }
-        .swal2-input {
-            background: rgba(0,0,0,0.2) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: white !important;
-            border-radius: 12px !important;
-            font-size: 1rem !important;
-            height: 3.5rem !important;
-        }
-        .swal2-confirm {
-            background-color: #6C63FF !important;
-            border-radius: 12px !important;
-            padding: 0.75rem 2rem !important;
-            font-weight: 600 !important;
-        }
-        .swal2-cancel {
-            border-radius: 12px !important;
-        }
-        .swal2-actions {
-            gap: 10px !important;
-        }
-        .key-display {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #d0bcff;
-            color: #00ff00;
-            font-family: monospace;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 1.1em;
-            letter-spacing: 1px;
-            margin: 10px 0;
-            word-break: break-all;
-        }
-    </style>
+    
+    <!-- Main JS (Deferred) -->
+    <script src="assets/js/main.js" defer></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 selection:bg-material-primary selection:text-acro-dark overflow-x-hidden">
 
@@ -121,7 +61,7 @@
     <nav class="fixed top-0 w-full p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center max-w-7xl z-50 gap-4 sm:gap-0 bg-[#0f0f13]/80 backdrop-blur-md sm:bg-transparent">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-gradient-to-tr from-material-primary to-purple-600 rounded-full flex items-center justify-center text-acro-dark font-bold text-xl shadow-lg shadow-purple-500/30">A</div>
-            <span class="font-bold text-xl tracking-tight">Aleocrophic</span>
+            <span class="font-bold text-xl tracking-tight text-white">Aleocrophic</span>
         </div>
         <div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
              <button onclick="checkOrderStatus()" class="text-sm font-bold text-material-tertiary hover:text-white transition-all flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-material-tertiary/30 hover:bg-material-tertiary/10 active:scale-95 w-full sm:w-auto">
@@ -131,7 +71,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mt-32 sm:mt-40 lg:mt-0 mb-12 relative">
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mt-40 sm:mt-48 lg:mt-0 mb-12 relative">
         
         <!-- Left: Text & Info -->
         <div class="space-y-6 sm:space-y-8 text-center lg:text-left relative z-10 lg:sticky lg:top-24">
@@ -202,7 +142,7 @@
                     </div>
                 </div>
 
-                <a href="https://trakteer.id/aleocrophic/tip?quantity=1" target="_blank" class="block w-full text-center py-4 rounded-xl bg-white/5 hover:bg-material-primary hover:text-acro-dark font-bold transition-all border border-white/10 active:scale-95">
+                <a href="https://trakteer.id/aleocrophic/tip?quantity=1" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-4 rounded-xl bg-white/5 hover:bg-material-primary hover:text-acro-dark font-bold transition-all border border-white/10 active:scale-95">
                     Get Pro+ (1 ACRON)
                 </a>
             </div>
@@ -257,7 +197,7 @@
                     </div>
                 </div>
 
-                <a href="https://trakteer.id/aleocrophic/tip?quantity=2" target="_blank" class="block w-full text-center py-5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-600 hover:to-pink-600 text-white font-bold transition-all shadow-lg shadow-purple-900/50 relative z-10 active:scale-95">
+                <a href="https://trakteer.id/aleocrophic/tip?quantity=2" target="_blank" rel="noopener noreferrer" class="block w-full text-center py-5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-600 hover:to-pink-600 text-white font-bold transition-all shadow-lg shadow-purple-900/50 relative z-10 active:scale-95">
                     Unlock Ultimate Power (2 ACRON)
                 </a>
                 <p class="text-[10px] text-center text-gray-500 mt-3 uppercase tracking-widest">Support Aleocrophic development directly.</p>
@@ -273,124 +213,5 @@
         </div>
     </main>
 
-    <!-- LOGIC REAL PEMBAYARAN & CLAIM KEY -->
-    <script>
-        // Check if running via file:// protocol
-        if (window.location.protocol === 'file:') {
-            console.warn("Aplikasi berjalan via file:// protocol. PHP tidak akan berfungsi. Gunakan server lokal (XAMPP/PHP -S).");
-        }
-
-        function checkOrderStatus() {
-            Swal.fire({
-                title: '🔍 Cek Status & Claim Key',
-                input: 'email',
-                inputLabel: 'Masukkan email Trakteer kamu',
-                inputPlaceholder: 'email@contoh.com',
-                confirmButtonText: 'Cari License',
-                showCancelButton: true,
-                background: '#1e1b26',
-                color: '#fff',
-                showLoaderOnConfirm: true,
-                customClass: {
-                    input: 'text-center'
-                },
-                preConfirm: (email) => {
-                    return fetch(`/api/ACRO PREMIUM/check-status.php?email=${encodeURIComponent(email)}`)
-                        .then(response => {
-                            const contentType = response.headers.get("content-type");
-                            if (!contentType || !contentType.includes("application/json")) {
-                                return response.text().then(text => {
-                                    throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}...`);
-                                });
-                            }
-                            if (!response.ok) {
-                                return response.json().then(err => { 
-                                    throw new Error(err.message || `Error ${response.status}`);
-                                });
-                            }
-                            return response.json();
-                        })
-                        .catch(error => {
-                            Swal.showValidationMessage(`Request failed: ${error.message}`);
-                        });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed && result.value.status === 'success') {
-                    const licenses = result.value.data;
-                    if (licenses.length === 1) {
-                        const lic = licenses[0];
-                        showKeyResult(lic.tier.replace('_', '+'), lic.license_key);
-                    } else {
-                        showMultipleLicenses(licenses);
-                    }
-                }
-            })
-        }
-
-        function showMultipleLicenses(licenses) {
-            let htmlContent = '<div class="space-y-4 max-h-96 overflow-y-auto pr-2">';
-            licenses.forEach(lic => {
-                const tierName = lic.tier.replace('_', '+');
-                htmlContent += `
-                    <div class="glass-card p-4 rounded-xl border border-white/10 text-left">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-material-primary">${tierName}</span>
-                            <span class="text-[10px] text-gray-500">${new Date(lic.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <div class="key-display text-xs mb-2">${lic.license_key}</div>
-                        <button onclick="copyToClipboard('${lic.license_key}')" class="w-full py-1 text-xs bg-white/5 hover:bg-white/10 rounded transition-colors border border-white/10">
-                            Copy Key
-                        </button>
-                    </div>
-                `;
-            });
-            htmlContent += '</div>';
-
-            Swal.fire({
-                title: '🎉 License Ditemukan!',
-                html: htmlContent,
-                showConfirmButton: false,
-                showCancelButton: true,
-                cancelButtonText: 'Tutup',
-                background: '#1e1b26',
-                color: '#fff'
-            });
-        }
-
-        function showKeyResult(tierName, key) {
-            Swal.fire({
-                icon: 'success',
-                title: '🎉 License Key Ditemukan!',
-                html: `
-                    <div class="text-sm text-gray-300 mb-2">Tier: <b>${tierName}</b> (Permanent)</div>
-                    <div class="key-display" id="licenseKeyBox">${key}</div>
-                    <p class="text-xs text-gray-400 mt-2">Salin key ini ke Termux atau Modded Ubuntu kamu.</p>
-                `,
-                confirmButtonText: '📋 Copy Key',
-                showCancelButton: true,
-                cancelButtonText: 'Tutup'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    copyToClipboard(key);
-                }
-            });
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Copied to clipboard!',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    background: '#1e1b26',
-                    color: '#fff'
-                });
-            });
-        }
-    </script>
 </body>
 </html>

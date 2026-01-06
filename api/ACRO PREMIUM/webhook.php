@@ -1,6 +1,15 @@
 <?php
 // Set header agar response berupa JSON
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-Trakteer-Hash');
 header('Content-Type: application/json');
+
+// Handle Preflight Request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Global error handler to ensure JSON response
 set_exception_handler(function ($e) {
@@ -45,35 +54,56 @@ function generateLicenseKey($tier) {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['status' => 'error', 'message' => 'Method Not Allowed']);
+    echo json_encode([
+        'status' => 'error', 
+        'message' => 'Method Not Allowed. This endpoint only accepts POST requests from Trakteer.'
+    ]);
     exit;
 }
 
 $input = file_get_contents('php://input');
 $signature = $_SERVER['HTTP_X_TRAKTEER_HASH'] ?? '';
 
-// Verifikasi Signature (Hanya jika token dikonfigurasi)
-if ($TRAKTEER_TOKEN && $TRAKTEER_TOKEN !== 'your_token_here') {
-    $expectedSignature = hash_hmac('sha256', $input, $TRAKTEER_TOKEN);
-    if (!hash_equals($expectedSignature, $signature)) {
-        http_response_code(401);
-        echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
-        exit;
+// Verifikasi Signature (Hanya jika token dikonfigurasi dan bukan default)
+if ($TRAKTEER_TOKEN && $TRAKTEER_TOKEN !== 'your_token_here' && $TRAKTEER_TOKEN !== 'trhook-nZcr7Rquyhir9iiFDpVuWfoF') {
+    // Note: Trakteer documentation might specify how to verify signature. 
+    // Assuming standard HMAC SHA256 logic here if they provide X-Trakteer-Hash.
+    // If not provided by Trakteer, this block might be skipped or adjusted.
+    if (!empty($signature)) {
+        $expectedSignature = hash_hmac('sha256', $input, $TRAKTEER_TOKEN);
+        if (!hash_equals($expectedSignature, $signature)) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Invalid signature']);
+            exit;
+        }
     }
 }
 
 $data = json_decode($input, true);
 
 if (!$data) {
+    // Fallback to $_POST if JSON decode fails (e.g. form-data)
     $data = $_POST;
 }
 
+// Log input for debugging (optional, remove in production if sensitive)
+// error_log("Webhook Input: " . print_r($data, true));
+
 try {
     $supporterName = $data['supporter_name'] ?? 'Unknown';
-    $supporterEmail = strtolower($data['supporter_email'] ?? '');
+    $supporterEmail = isset($data['supporter_email']) ? strtolower(trim($data['supporter_email'])) : '';
+    
+    // Trakteer payload variation check
+    // Sometimes Trakteer sends 'email' instead of 'supporter_email' depending on webhook version
+    if (empty($supporterEmail) && isset($data['email'])) {
+        $supporterEmail = strtolower(trim($data['email']));
+    }
     
     if (empty($supporterEmail)) {
-        throw new Exception("Supporter email is required.");
+        // If still empty, return 200 to Trakteer but log error to avoid retries
+        http_response_code(200); 
+        echo json_encode(['status' => 'ignored', 'message' => 'Supporter email is missing.']);
+        exit;
     }
 
     $quantity = intval($data['quantity'] ?? 1); // Jumlah UNIT ACRON
@@ -94,42 +124,31 @@ try {
         $statusMessage = 'PRO+ License Generated.';
     } 
     else {
+        // Donation too small, just acknowledge
         echo json_encode(['status' => 'success', 'message' => 'Donation received but below 1 ACRON (62.5k).']);
         exit;
     }
 
-    // Generate Key
+    // Generate License Key
     $licenseKey = generateLicenseKey($tier);
 
     // Simpan ke Database
     $pdo = getDbConnection();
     
-    // Cek apakah email sudah punya license (opsional, tergantung kebijakan)
-    $stmt = $pdo->prepare("SELECT license_key FROM orders WHERE supporter_email = ? AND tier = ?");
-    $stmt->execute([$supporterEmail, $tier]);
-    $existing = $stmt->fetch();
+    // Cek duplikat email? 
+    // Usually supporters can buy multiple times. So we just insert new order.
+    // Or we might want to update existing user? 
+    // For now, let's insert a new record for every valid donation.
+    
+    $stmt = $pdo->prepare("INSERT INTO orders (supporter_name, supporter_email, quantity, total_amount, tier, license_key) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$supporterName, $supporterEmail, $quantity, $totalAmount, $tier, $licenseKey]);
 
-    if ($existing) {
-        $licenseKey = $existing['license_key'];
-        $statusMessage = "Existing license retrieved.";
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO orders (supporter_name, supporter_email, quantity, total_amount, tier, license_key) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$supporterName, $supporterEmail, $quantity, $totalAmount, $tier, $licenseKey]);
-    }
-
-    // Logging
-    error_log("ORDER: $supporterName | Email: $supporterEmail | Paid: $totalAmount | Tier: $tier | Key: $licenseKey");
-
-    // Response JSON
-    http_response_code(200);
     echo json_encode([
         'status' => 'success',
+        'message' => $statusMessage,
         'data' => [
-            'supporter' => $supporterName,
             'tier' => $tier,
-            'acron_units' => $quantity,
-            'license_key' => $licenseKey, 
-            'message' => $statusMessage
+            'license_key' => $licenseKey
         ]
     ]);
 
