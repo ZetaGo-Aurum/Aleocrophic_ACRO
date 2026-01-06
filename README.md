@@ -82,14 +82,6 @@ Author: Aleocrophic Team
   </tr>
 </table>
 
-<div align="center">
-  <p>
-    <b>CATATAN PENTING:</b><br>
-    🔹 Semua unit ACRO telah diupgrade menjadi <b>ACRON</b> | 🔹 Harga sudah termasuk <b>PPN</b><br>
-    🔹 <b>Garansi 30 hari</b> uang kembali | 🔹 Dukungan multi-platform (<b>Windows, Linux, MacOS</b>)
-  </p>
-</div>
-
 <br>
 
 <h2 id="paket-premium" align="center">🌟 Detail Paket Premium</h2>
