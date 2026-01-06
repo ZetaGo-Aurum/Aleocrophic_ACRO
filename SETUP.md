@@ -6,6 +6,8 @@ Proyek ini telah dikonfigurasi untuk bekerja secara nyata dengan integrasi Trakt
 - Akun [Trakteer](https://trakteer.id) (untuk Webhook)
 - Database PostgreSQL (Disarankan menggunakan [Supabase](https://supabase.com))
 - Akun [Vercel](https://vercel.com) (Direkomendasikan untuk deployment PHP)
+- **Node.js**: Versi 20.x atau lebih baru (diperlukan untuk environment deployment Vercel)
+- **Vercel PHP Runtime**: `vercel-php@0.7.4` (atau lebih baru)
 
 ## 2. Struktur Database
 Jalankan query SQL berikut di database PostgreSQL Anda untuk membuat tabel yang diperlukan:
@@ -42,6 +44,7 @@ Konfigurasikan variabel berikut di platform deployment Anda (Vercel/Netlify):
 ### Vercel (Direkomendasikan)
 1. Hubungkan repositori ke Vercel.
 2. Vercel akan secara otomatis mendeteksi `vercel.json` dan menggunakan runtime `vercel-php`.
+   - **Penting:** Pastikan di Project Settings > General > Node.js Version diset ke **20.x** atau **22.x**.
 3. Masukkan Environment Variables di dashboard Vercel.
 4. Deploy.
 
@@ -56,8 +59,15 @@ Konfigurasikan variabel berikut di platform deployment Anda (Vercel/Netlify):
 3. Masukkan URL Webhook: `https://your-domain.com/api/ACRO%20PREMIUM/webhook.php` (atau `https://your-domain.com/webhook`).
 4. Salin **Key/Token** dan masukkan ke variabel lingkungan `TRAKTEER_TOKEN`.
 
-## 6. Testing
-Anda dapat melakukan test menggunakan `curl` untuk mensimulasikan webhook:
+## 6. Testing & Validasi
+Sebelum melakukan deployment, Anda dapat memvalidasi konfigurasi proyek menggunakan script yang tersedia:
+
+```bash
+# Validasi konfigurasi vercel.json
+npm run test:config
+```
+
+Anda juga dapat melakukan test webhook menggunakan `curl`:
 
 ```bash
 curl -X POST https://your-domain.com/api/ACRO%20PREMIUM/webhook.php \

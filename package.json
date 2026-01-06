@@ -1,0 +1,17 @@
+{
+  "name": "aleocrophic-payments",
+  "version": "1.0.0",
+  "description": "Payment processing system with Trakteer integration",
+  "scripts": {
+    "test:config": "node scripts/validate-config.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO.git"
+  },
+  "author": "Aleocrophic",
+  "license": "Proprietary"
+}
