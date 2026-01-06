@@ -114,8 +114,18 @@ body {
 .github-content th, .github-content td { border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; text-align: left; }
 .github-content th { background: rgba(255,255,255,0.05); color: #d0bcff; }
 
+/* Navbar z-index fix */
+nav.fixed {
+    z-index: 100;
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
+    /* Adjust top margin to prevent overlap */
+    main {
+        margin-top: 120px !important;
+    }
+
     /* Disable heavy animations on mobile */
     .animate-blob {
         animation: none !important;
