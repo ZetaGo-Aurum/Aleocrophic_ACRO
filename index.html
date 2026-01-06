@@ -54,6 +54,9 @@
     
     <!-- Main JS (Deferred) -->
     <script src="assets/js/main.js" defer></script>
+    
+    <!-- Marked library for Markdown rendering (Deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 selection:bg-material-primary selection:text-acro-dark overflow-x-hidden">
 
@@ -67,12 +70,15 @@
              <button onclick="checkOrderStatus()" class="text-sm font-bold text-material-tertiary hover:text-white transition-all flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-material-tertiary/30 hover:bg-material-tertiary/10 active:scale-95 w-full sm:w-auto">
                 <i class="fas fa-search"></i> Cek Status / Claim Key
             </button>
+             <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu" target="_blank" rel="noopener noreferrer" class="text-white hover:text-material-primary transition-colors text-2xl" title="View Source on GitHub">
+                <i class="fab fa-github"></i>
+            </a>
         </div>
     </nav>
 
     <!-- Main Content -->
     <!-- Adjusted margin top for mobile to avoid content overlap or excessive gap -->
-    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mt-28 sm:mt-48 lg:mt-0 mb-12 relative">
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start mt-28 sm:mt-48 lg:mt-32 mb-12 relative">
         
         <!-- Left: Text & Info -->
         <div class="space-y-6 sm:space-y-8 text-center lg:text-left relative z-10 lg:sticky lg:top-24">
@@ -97,6 +103,28 @@
                 <div class="flex items-center gap-2 px-5 py-3 text-sm text-gray-400 glass-card rounded-full border border-white/5">
                     <i class="fas fa-coins text-yellow-400"></i> 
                     <span>1 ACRON = <span class="text-white font-medium">Rp 62.500</span></span>
+                </div>
+            </div>
+            
+            <!-- GitHub README Content Area -->
+            <div id="github-readme" class="github-content hidden">
+                <div class="flex items-center gap-2 mb-4 text-material-primary border-b border-white/10 pb-2">
+                    <i class="fab fa-github"></i>
+                    <h3 class="font-bold text-lg m-0">Latest Updates from GitHub</h3>
+                </div>
+                <div id="readme-body" class="text-sm text-gray-300 text-left">
+                    <div class="animate-pulse flex space-x-4">
+                        <div class="flex-1 space-y-4 py-1">
+                            <div class="h-4 bg-white/10 rounded w-3/4"></div>
+                            <div class="space-y-2">
+                                <div class="h-4 bg-white/10 rounded"></div>
+                                <div class="h-4 bg-white/10 rounded w-5/6"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu" target="_blank" class="text-xs text-material-primary hover:underline">View Full README on GitHub &rarr;</a>
                 </div>
             </div>
         </div>

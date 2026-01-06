@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expose function globally for the button onclick
     window.checkOrderStatus = checkOrderStatus;
+
+    // Load GitHub README
+    fetchGitHubReadme();
 });
 
 function checkOrderStatus() {
@@ -23,6 +26,10 @@ function checkOrderStatus() {
             input: 'text-center'
         },
         preConfirm: (email) => {
+            if (!email) {
+                Swal.showValidationMessage('Email wajib diisi');
+                return;
+            }
             return fetch(`/api/ACRO PREMIUM/check-status.php?email=${encodeURIComponent(email)}`)
                 .then(response => {
                     const contentType = response.headers.get("content-type");
@@ -96,4 +103,48 @@ function copyToClipboard(element) {
             title: 'Copied to clipboard'
         });
     });
+}
+
+async function fetchGitHubReadme() {
+    const readmeContainer = document.getElementById('github-readme');
+    const readmeBody = document.getElementById('readme-body');
+    
+    if (!readmeContainer || !readmeBody) return;
+
+    // Show container
+    readmeContainer.classList.remove('hidden');
+
+    try {
+        // Fetch from GitHub API
+        const repoOwner = 'ZetaGo-Aurum';
+        const repoName = 'modded-ubuntu';
+        const branch = 'main'; // or master
+        const response = await fetch(`https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/README.md`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to load README: ${response.status}`);
+        }
+
+        const markdown = await response.text();
+        
+        // Use marked.js to convert Markdown to HTML
+        // Note: marked is loaded deferred in index.html
+        if (typeof marked !== 'undefined') {
+             // Configure marked for safety (optional but recommended)
+            // marked.use({ sanitizer: ... }); // Simple usage for now
+            
+            // Limit content length for preview
+            const previewLength = 1000;
+            const truncatedMarkdown = markdown.substring(0, previewLength) + '...';
+            
+            readmeBody.innerHTML = marked.parse(truncatedMarkdown);
+        } else {
+            // Fallback if marked fails to load
+             readmeBody.textContent = "Preview unavailable. Click below to view on GitHub.";
+        }
+
+    } catch (error) {
+        console.error('Error fetching GitHub README:', error);
+        readmeBody.innerHTML = '<p class="text-red-400">Failed to load latest updates from GitHub.</p>';
+    }
 }
