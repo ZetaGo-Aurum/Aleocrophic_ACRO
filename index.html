@@ -63,6 +63,12 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 selection:bg-material-primary selection:text-acro-dark overflow-x-hidden">
 
+    <!-- Global Background Blobs -->
+    <div class="bg-blob-container">
+        <div class="absolute -top-20 -right-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob pointer-events-none"></div>
+        <div class="absolute top-1/2 -left-20 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
+    </div>
+
     <!-- Navbar Simple -->
     <nav class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center z-[1000] gap-4 sm:gap-0 bg-[#0f0f13]/80 backdrop-blur-md sm:bg-transparent transition-all duration-300">
         <div class="flex items-center gap-3 w-full sm:w-auto justify-start">
@@ -134,12 +140,6 @@
 
         <!-- Right: Pricing Cards -->
         <div id="pricing" class="relative w-full space-y-8 sm:space-y-10 lg:space-y-6">
-
-            <!-- Blur Glow Effect Container -->
-            <div class="bg-blob-container">
-                <div class="absolute -top-20 -right-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob pointer-events-none"></div>
-                <div class="absolute top-1/2 -left-20 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
-            </div>
 
             <!-- Tier 1: Pro+ -->
             <div class="glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden ring-1 ring-white/10 hover:ring-material-primary/50 transition-all duration-300 group">

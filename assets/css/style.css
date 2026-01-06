@@ -3,21 +3,25 @@
 }
 
 html, body {
-    width: 100%;
+    max-width: 100%;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+    position: relative;
+    background-color: #0f0f13;
+    color: #e6e1e5;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    background-color: #0f0f13;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background-image: 
         radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
         radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
         radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-    color: #e6e1e5;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    position: relative;
 }
 
 /* Ensure background blobs don't cause overflow */
@@ -25,8 +29,8 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
     pointer-events: none;
     z-index: 0;
@@ -39,6 +43,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     z-index: 1;
+    max-width: 100%;
 }
 
 .btn-material {
@@ -92,20 +97,6 @@ body {
     gap: 10px !important;
 }
 
-.key-display {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid #d0bcff;
-    color: #00ff00;
-    font-family: monospace;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 1.1em;
-    letter-spacing: 1px;
-    margin: 10px 0;
-    word-break: break-all;
-    cursor: pointer;
-}
-
 /* GitHub Repo Content Styles */
 .github-content {
     background: rgba(15, 15, 19, 0.95);
@@ -139,53 +130,67 @@ body {
 
 /* Navbar z-index fix */
 nav.fixed {
-    z-index: 1000; /* Higher priority for navbar */
+    z-index: 1000;
 }
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
-    /* Prevent horizontal scroll from large elements */
-    .max-w-7xl {
-        max-width: 100vw !important;
-        overflow-x: hidden;
-    }
-
-    /* Adjust top margin to prevent overlap */
     main {
-        margin-top: 140px !important; /* Increased for mobile navbar height */
-        padding-left: 1rem;
-        padding-right: 1rem;
+        margin-top: 160px !important; 
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        gap: 2.5rem !important;
     }
 
-    /* Disable heavy animations on mobile */
-    .animate-blob {
-        animation: none !important;
-        opacity: 0.1 !important;
-    }
-    
-    /* Adjust glass card padding */
-    .glass-card {
-        backdrop-filter: blur(8px); /* Reduce blur calculation */
-        -webkit-backdrop-filter: blur(8px);
+    h1 {
+        font-size: 2.5rem !important;
+        line-height: 1.2 !important;
     }
 
-    /* Prevent overflow issues */
-    .swal2-popup {
-        width: 90% !important;
-        margin: auto;
-        z-index: 2000 !important; /* Above navbar */
-    }
-    
-    /* Adjust GitHub content padding on mobile */
     .github-content {
         padding: 15px;
-        margin-top: 30px;
+        margin-top: 25px;
         font-size: 0.85rem;
     }
 
-    /* Fix image sizing in github content */
+    .github-content pre {
+        padding: 0.85rem;
+        font-size: 0.8rem;
+    }
+
+    .animate-blob {
+        animation: none !important;
+        opacity: 0.15 !important;
+    }
+
+    .swal2-popup {
+        width: 92% !important;
+        padding: 1rem !important;
+        font-size: 0.9rem !important;
+        z-index: 9999 !important;
+    }
+
     .github-content img {
-        width: 100% !important;
         max-width: 100% !important;
+        height: auto !important;
+    }
+
+    .glass-card {
+        padding: 1.5rem !important;
+        border-radius: 1.75rem !important;
+    }
+}
+
+/* Extra small devices fix */
+@media (max-width: 380px) {
+    main {
+        margin-top: 180px !important;
+    }
+    h1 {
+        font-size: 2.2rem !important;
+    }
+    .btn-material {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
     }
 }
