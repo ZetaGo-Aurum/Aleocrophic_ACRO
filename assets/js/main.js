@@ -1,10 +1,4 @@
 /**
-<<<<<<< Updated upstream
-=======
- * Handle Image Loading Errors
- * Replaces broken images with a fallback placeholder
- */
-/**
  * Global Image Handling & Optimization
  */
 function handleImageError(event) {
@@ -47,7 +41,6 @@ const imageObserver = new MutationObserver((mutations) => {
 imageObserver.observe(document.body, { childList: true, subtree: true });
 
 /**
->>>>>>> Stashed changes
  * Log errors to a monitoring service (simulated)
  * @param {string} type - Error type (e.g., 'API_ERROR', 'UI_ERROR')
  * @param {string} message - Error message
@@ -82,74 +75,70 @@ async function fetchGitHubReadme(retryCount = 0, branch = 'main') {
     
     if (!readmeContainer || !readmeBody) return;
 
-    // Show container
-    readmeContainer.classList.remove('hidden');
-
     try {
-        const repoOwner = 'ZetaGo-Aurum';
-        const repoName = 'modded-ubuntu';
-        
-        // Use a cache-busting parameter to ensure fresh content
-        const url = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/README.md?t=${new Date().getTime()}`;
-        
-        console.log(`Fetching GitHub README: ${url} (Attempt ${retryCount + 1}, Branch: ${branch})`);
-        
-        const response = await fetch(url);
+        // Clear previous state
+        readmeBody.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 space-y-4">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-material-primary"></div>
+                <p class="text-gray-400">Fetching documentation from GitHub...</p>
+            </div>
+        `;
+        readmeContainer.classList.remove('hidden');
 
+        const response = await fetch(`https://raw.githubusercontent.com/ZetaGo-Aurum/Aleocrophic_ACRO/${branch}/README.md`);
+        
         if (!response.ok) {
-            if (response.status === 404) {
-                // If main branch fails, try master branch on first failure
-                if (branch === 'main') {
-                    console.warn('README not found on main branch, trying master...');
-                    return fetchGitHubReadme(0, 'master');
-                }
-                logErrorToService('README_404', `README.md not found on ${branch}`, { url });
-                throw new Error(`README.md not found (404) on ${branch}.`);
-            }
-            logErrorToService('HTTP_ERROR', `HTTP Error: ${response.status}`, { url, status: response.status });
-            throw new Error(`HTTP Error: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const markdown = await response.text();
         
-        if (!markdown || markdown.trim() === '') {
-            logErrorToService('EMPTY_CONTENT', "README.md is empty.", { url });
-            throw new Error("README.md is empty.");
+        // Use marked library if available, otherwise fallback to simple text
+        if (typeof marked !== 'undefined') {
+            readmeBody.innerHTML = marked.parse(markdown);
+        } else {
+            readmeBody.innerHTML = `<pre class="whitespace-pre-wrap text-sm text-gray-300">${markdown}</pre>`;
         }
 
-        if (typeof marked !== 'undefined') {
-            // Limit content length for preview to avoid heavy rendering
-            const previewLength = 1500;
-            const truncatedMarkdown = markdown.length > previewLength 
-                ? markdown.substring(0, previewLength) + '\n\n... (Lihat selengkapnya di GitHub)' 
-                : markdown;
-            
-            readmeBody.innerHTML = marked.parse(truncatedMarkdown);
-            console.log("GitHub README successfully loaded and rendered.");
-        } else {
-            logErrorToService('RENDERER_ERROR', "Marked.js not loaded", {});
-            readmeBody.innerHTML = '<p class="text-yellow-400">Renderer not ready. Please refresh.</p>';
+        // Apply syntax highlighting if Prism is available
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAllUnder(readmeBody);
         }
+
+        // Fix image paths in markdown
+        const images = readmeBody.querySelectorAll('img');
+        images.forEach(img => {
+            if (!img.src.startsWith('http')) {
+                img.src = `https://raw.githubusercontent.com/ZetaGo-Aurum/Aleocrophic_ACRO/${branch}/${img.getAttribute('src')}`;
+            }
+            img.classList.add('max-w-full', 'h-auto', 'rounded-lg', 'my-4', 'shadow-lg');
+            img.onerror = handleImageError;
+        });
 
     } catch (error) {
-        // Only log generic errors if they haven't been logged by specific checks above
-        if (!error.message.includes('HTTP Error') && !error.message.includes('README.md not found')) {
-             console.error('Error fetching GitHub README:', error);
-        }
-        
+        logErrorToService('UI_ERROR', 'Failed to fetch GitHub README', { 
+            error: error.message, 
+            retryCount,
+            branch 
+        });
+
         if (retryCount < MAX_RETRIES) {
-            console.log(`Retrying in 2 seconds...`);
-            setTimeout(() => fetchGitHubReadme(retryCount + 1, branch), 2000);
-        } else {
-            // Final failure log
-            logErrorToService('FETCH_FAILED', error.message, { retryCount });
-            
+            const delay = Math.pow(2, retryCount) * 1000;
             readmeBody.innerHTML = `
-                <div class="p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
-                    <p class="text-red-400 font-bold mb-2">Gagal memuat update terbaru.</p>
-                    <p class="text-xs text-gray-400">${error.message}</p>
-                    <button onclick="fetchGitHubReadme()" class="mt-3 text-xs bg-red-500/20 hover:bg-red-500/40 text-red-200 px-3 py-1 rounded-full transition-all">
-                        <i class="fas fa-sync-alt"></i> Coba Lagi
+                <div class="text-center py-12">
+                    <p class="text-yellow-500 mb-2">Retrying in ${delay/1000}s...</p>
+                    <p class="text-gray-500 text-sm">Attempt ${retryCount + 1} of ${MAX_RETRIES}</p>
+                </div>
+            `;
+            setTimeout(() => fetchGitHubReadme(retryCount + 1, branch), delay);
+        } else {
+            readmeBody.innerHTML = `
+                <div class="text-center py-12 px-4 glass-card border-red-500/20 bg-red-500/5 rounded-xl">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+                    <h3 class="text-white font-bold mb-2">Gagal Memuat Dokumentasi</h3>
+                    <p class="text-gray-400 text-sm mb-6">Terjadi kesalahan saat mengambil file dari GitHub. Silakan periksa koneksi internet Anda atau coba lagi nanti.</p>
+                    <button onclick="fetchGitHubReadme()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                        Coba Lagi
                     </button>
                 </div>
             `;
@@ -158,130 +147,118 @@ async function fetchGitHubReadme(retryCount = 0, branch = 'main') {
 }
 
 /**
- * Check Order Status / Claim Key
- * Triggered by the "Cek Status" button in the navbar
+ * Check License Status via API
  */
-async function checkOrderStatus() {
+async function checkLicenseStatus(email, orderId) {
+    const checkBtn = document.getElementById('check-btn');
+    const resultContainer = document.getElementById('check-result');
+    
+    if (!checkBtn || !resultContainer) return;
+
     try {
-        const { value: email } = await Swal.fire({
-            title: 'Cek Status Pembayaran',
-            input: 'email',
-            inputLabel: 'Masukkan alamat email Trakteer kamu',
-            inputPlaceholder: 'user@example.com',
-            showCancelButton: true,
-            confirmButtonText: 'Cek Sekarang',
-            cancelButtonText: 'Batal',
-            background: '#1a1a24',
-            color: '#ffffff',
-            inputAttributes: {
-                autocapitalize: 'off',
-                autocorrect: 'off'
-            },
-            customClass: {
-                popup: 'glass-card border border-white/10 rounded-[2rem]',
-                confirmButton: 'btn-material bg-material-primary text-acro-dark font-bold px-6 py-2 rounded-full',
-                cancelButton: 'text-gray-400 hover:text-white transition-colors'
-            }
-        });
+        // UI State: Loading
+        checkBtn.disabled = true;
+        checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Checking...';
+        resultContainer.classList.add('hidden');
 
-        if (!email) return;
+        const response = await fetch(`./api/premium/check-status.php?email=${encodeURIComponent(email)}&order_id=${encodeURIComponent(orderId)}`);
+        const data = await response.json();
 
-        Swal.fire({
-            title: 'Memproses...',
-            text: 'Mencari data lisensi untuk ' + email,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            },
-            background: '#1a1a24',
-            color: '#ffffff'
-        });
-
-        const response = await fetch(`api/premium/check-status.php?email=${encodeURIComponent(email)}`);
-        const result = await response.json();
-
-        if (result.status === 'success') {
-            const data = result.data;
-            Swal.fire({
-                title: 'Lisensi Ditemukan!',
-                html: `
-                    <div class="text-left space-y-3 mt-4">
-                        <div class="p-3 bg-white/5 rounded-xl border border-white/10">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Supporter</p>
-                            <p class="font-bold text-material-primary">${data.supporter_name}</p>
+        // UI State: Result
+        resultContainer.classList.remove('hidden');
+        
+        if (data.status === 'success') {
+            resultContainer.innerHTML = `
+                <div class="p-6 rounded-xl bg-green-500/10 border border-green-500/20 animate-fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                            <i class="fas fa-check text-white text-xl"></i>
                         </div>
-                        <div class="p-3 bg-white/5 rounded-xl border border-white/10">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Tier Edition</p>
-                            <p class="font-bold text-white">${data.tier}</p>
+                        <div>
+                            <h3 class="text-white font-bold text-lg">License Found!</h3>
+                            <p class="text-green-400 text-sm">Your payment has been verified.</p>
                         </div>
-                        <div class="p-4 bg-material-primary/10 rounded-xl border border-material-primary/30 relative group">
-                            <p class="text-[10px] text-material-primary uppercase tracking-widest mb-1">License Key</p>
-                            <code id="license-key" class="font-mono text-lg text-material-primary font-bold break-all">${data.license_key}</code>
-                            <button onclick="copyToClipboard('${data.license_key}')" class="absolute top-2 right-2 text-material-primary hover:text-white transition-colors" title="Copy Key">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                        <p class="text-[10px] text-gray-500 text-center italic mt-4">Terima kasih telah mendukung pengembangan Aleocrophic!</p>
                     </div>
-                `,
-                icon: 'success',
-                confirmButtonText: 'Tutup',
-                background: '#1a1a24',
-                color: '#ffffff',
-                customClass: {
-                    popup: 'glass-card border border-white/10 rounded-[2rem]',
-                    confirmButton: 'btn-material bg-material-primary text-acro-dark font-bold px-6 py-2 rounded-full'
-                }
-            });
+                    <div class="space-y-3">
+                        <div class="bg-black/20 p-4 rounded-lg border border-white/5">
+                            <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Your License Key</p>
+                            <code class="text-material-primary font-mono text-lg break-all select-all">${data.license_key}</code>
+                        </div>
+                        <p class="text-gray-400 text-xs italic">
+                            <i class="fas fa-info-circle mr-1"></i> Keep this key safe. Do not share it with others.
+                        </p>
+                    </div>
+                </div>
+            `;
         } else {
-            Swal.fire({
-                title: 'Gagal',
-                text: result.message || 'Data tidak ditemukan.',
-                icon: 'error',
-                background: '#1a1a24',
-                color: '#ffffff',
-                customClass: {
-                    popup: 'glass-card border border-white/10 rounded-[2rem]',
-                    confirmButton: 'btn-material bg-red-500 text-white font-bold px-6 py-2 rounded-full'
-                }
-            });
+            resultContainer.innerHTML = `
+                <div class="p-6 rounded-xl bg-red-500/10 border border-red-500/20 animate-fade-in">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center">
+                            <i class="fas fa-times text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold text-lg">No License Found</h3>
+                            <p class="text-red-400 text-sm">${data.message || 'Payment verification failed.'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
+
     } catch (error) {
-        logErrorToService('CHECK_STATUS_ERROR', error.message);
-        Swal.fire({
-            title: 'Error',
-            text: 'Terjadi kesalahan sistem. Silakan coba lagi nanti.',
-            icon: 'error',
-            background: '#1a1a24',
-            color: '#ffffff'
-        });
+        logErrorToService('API_ERROR', 'License check failed', { error: error.message });
+        resultContainer.classList.remove('hidden');
+        resultContainer.innerHTML = `
+            <div class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm">
+                <i class="fas fa-exclamation-triangle mr-2"></i> System is currently busy. Please try again later.
+            </div>
+        `;
+    } finally {
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = 'Check License Status';
     }
 }
 
-/**
- * Utility to copy text to clipboard
- */
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: 'Key berhasil disalin!',
-            showConfirmButton: false,
-            timer: 2000,
-            background: '#1a1a24',
-            color: '#ffffff'
+// Initialize components when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Fetch GitHub README
+    fetchGitHubReadme();
+
+    // 2. Handle License Check Form
+    const checkForm = document.getElementById('license-check-form');
+    if (checkForm) {
+        checkForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const orderId = document.getElementById('order_id').value;
+            if (email && orderId) {
+                checkLicenseStatus(email, orderId);
+            }
+        });
+    }
+
+    // 3. Smooth Scroll for Anchor Links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         });
     });
-}
 
-// Make functions available globally for onclick events
-window.checkOrderStatus = checkOrderStatus;
-window.copyToClipboard = copyToClipboard;
-window.fetchGitHubReadme = fetchGitHubReadme;
-
-// Initial load
-document.addEventListener('DOMContentLoaded', () => {
-    fetchGitHubReadme();
+    // 4. Parallax Effect for Hero
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
+            heroContent.style.opacity = 1 - (scrolled / 700);
+        });
+    }
 });

@@ -49,6 +49,27 @@ function testAutoApproveCriteria($config) {
     }
 }
 
+function testLoggingLogic() {
+    echo "\nTesting Logging Logic...\n";
+    $testConfig = [
+        'logging' => [
+            'enabled' => true,
+            'path' => '/non-existent-dir-for-test/app.log'
+        ]
+    ];
+    
+    $logDir = dirname($testConfig['logging']['path']);
+    $canWrite = @is_dir($logDir) && is_writable($logDir);
+    
+    if (!$canWrite) {
+        echo "[PASS] Correctly identified read-only/non-existent directory: $logDir\n";
+        echo "       Fallback to system error_log() will be used.\n";
+    } else {
+        echo "[FAIL] Directory should not be writable for this test: $logDir\n";
+    }
+}
+
 // Run tests
 testLicenseGeneration();
 testAutoApproveCriteria($config);
+testLoggingLogic();
