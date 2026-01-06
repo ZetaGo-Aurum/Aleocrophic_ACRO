@@ -42,9 +42,9 @@ Author: Aleocrophic Team
   <tr>
     <td align="center" width="230" valign="top">
       <br>
-      <h3>FREE EDITION</h3>
+      <h3>PRO tanpa Plus</h3>
       <p><b>Gratis</b></p>
-      <img src="https://img.shields.io/badge/Tier-FREE-grey?style=for-the-badge" alt="Free Badge">
+      <img src="https://img.shields.io/badge/Tier-PRO_tanpa_Plus-grey?style=for-the-badge" alt="PRO tanpa Plus Badge">
       <br><br>
       <ul align="left">
         <li>✅ <b>Core Ubuntu Base</b><br><small>Sistem operasi dasar</small></li>
@@ -54,7 +54,7 @@ Author: Aleocrophic Team
       </ul>
       <br>
       <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu">
-        <img src="https://img.shields.io/badge/DOWNLOAD-GITHUB-grey?style=for-the-badge&logo=github" alt="Download Free">
+        <img src="https://img.shields.io/badge/DOWNLOAD-GITHUB-grey?style=for-the-badge&logo=github" alt="Download PRO tanpa Plus">
       </a>
       <br><br>
     </td>
@@ -110,7 +110,7 @@ Author: Aleocrophic Team
     <thead>
       <tr>
         <th>Fitur</th>
-        <th>Basic (Free)</th>
+        <th>PRO tanpa Plus</th>
         <th>PRO+ (1 ACRON)</th>
         <th>Ultimate (2 ACRON)</th>
       </tr>

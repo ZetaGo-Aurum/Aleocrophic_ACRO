@@ -101,9 +101,22 @@ try {
 } catch (Exception $e) {
     // Log the error if enabled
     if ($config['logging']['enabled']) {
-        $logDir = dirname($config['logging']['path']);
-        if (!is_dir($logDir)) mkdir($logDir, 0777, true);
-        error_log("[" . date('Y-m-d H:i:s') . "] Error in check-status.php: " . $e->getMessage() . "\n", 3, $config['logging']['path']);
+        try {
+            $logDir = dirname($config['logging']['path']);
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0777, true);
+            }
+            
+            if (is_writable($logDir) || is_writable($config['logging']['path'])) {
+                error_log("[" . date('Y-m-d H:i:s') . "] Error in check-status.php: " . $e->getMessage() . "\n", 3, $config['logging']['path']);
+            } else {
+                // Fallback to system error log if file is not writable (e.g. read-only FS)
+                error_log("Aleocrophic API Error (check-status.php): " . $e->getMessage());
+            }
+        } catch (Exception $logError) {
+            // Silently fail if logging itself fails
+            error_log("Aleocrophic API Logging Failed: " . $logError->getMessage());
+        }
     }
 
     http_response_code(500);
