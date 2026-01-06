@@ -1,0 +1,16 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Vercel & Netlify
+.vercel
+.netlify
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store

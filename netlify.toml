@@ -1,0 +1,18 @@
+[build]
+  publish = "ACRO PREMIUM"
+
+[build.environment]
+  PHP_VERSION = "8.2"
+
+[[redirects]]
+  from = "/webhook"
+  to = "/webhook.php"
+  status = 200
+
+[[redirects]]
+  from = "/check-status"
+  to = "/check-status.php"
+  status = 200
+
+# Note: Netlify requires a specific setup (like a build plugin or custom runtime) 
+# to execute PHP files. Vercel is recommended for this PHP-based project.

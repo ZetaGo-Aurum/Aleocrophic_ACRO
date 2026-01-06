@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aleocrophic Payments | Premium Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 untuk Notifikasi Keren -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        'material-surface': '#1e1b26',
+                        'material-primary': '#d0bcff',
+                        'material-secondary': '#ccc2dc',
+                        'material-tertiary': '#efb8c8',
+                        'acro-dark': '#121212',
+                        'acro-accent': '#6C63FF',
+                        'acro-gold': '#FFD700',
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f0f13;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            color: #e6e1e5;
+        }
+        .glass-card {
+            background: rgba(30, 27, 38, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .btn-material {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-material:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(208, 188, 255, 0.5);
+        }
+        
+        /* SweetAlert Custom Dark Theme */
+        .swal2-popup {
+            background: #1e1b26 !important;
+            color: #e6e1e5 !important;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px !important;
+            padding: 1.5rem !important;
+            width: 95% !important;
+            max-width: 450px !important;
+        }
+        .swal2-title {
+            color: #d0bcff !important;
+            font-size: 1.5rem !important;
+            font-weight: 700 !important;
+        }
+        .swal2-input {
+            background: rgba(0,0,0,0.2) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            font-size: 1rem !important;
+            height: 3.5rem !important;
+        }
+        .swal2-confirm {
+            background-color: #6C63FF !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 2rem !important;
+            font-weight: 600 !important;
+        }
+        .swal2-cancel {
+            border-radius: 12px !important;
+        }
+        .swal2-actions {
+            gap: 10px !important;
+        }
+        .key-display {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #d0bcff;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 selection:bg-material-primary selection:text-acro-dark overflow-x-hidden">
+
+    <!-- Navbar Simple -->
+    <nav class="fixed top-0 w-full p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center max-w-7xl z-50 gap-4 sm:gap-0 bg-[#0f0f13]/80 backdrop-blur-md sm:bg-transparent">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-tr from-material-primary to-purple-600 rounded-full flex items-center justify-center text-acro-dark font-bold text-xl shadow-lg shadow-purple-500/30">A</div>
+            <span class="font-bold text-xl tracking-tight">Aleocrophic</span>
+        </div>
+        <div class="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-end">
+             <button onclick="checkOrderStatus()" class="text-sm font-bold text-material-tertiary hover:text-white transition-all flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-material-tertiary/30 hover:bg-material-tertiary/10 active:scale-95 w-full sm:w-auto">
+                <i class="fas fa-search"></i> Cek Status / Claim Key
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mt-32 sm:mt-40 lg:mt-0 mb-12 relative">
+        
+        <!-- Left: Text & Info -->
+        <div class="space-y-6 sm:space-y-8 text-center lg:text-left relative z-10 lg:sticky lg:top-24">
+            <div class="inline-flex items-center px-4 py-2 rounded-full glass-card border border-material-primary/30 text-material-primary text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 hover:bg-white/5 transition-colors cursor-default">
+                <span class="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
+                Official ACRON Payment Gateway
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.1] bg-clip-text text-transparent bg-gradient-to-r from-material-primary via-white to-material-tertiary drop-shadow-2xl">
+                The OS<br class="hidden sm:block"> For Elites.
+            </h1>
+            
+            <p class="text-base sm:text-lg text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Upgrade ke <strong class="text-material-primary">Modded Ubuntu by Aleocrophic</strong>. Pilih tier support kamu menggunakan <strong>ACRON Unit</strong>. Keamanan militer, performa gaming tanpa batas.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4 items-center">
+                <a href="#pricing" class="btn-material w-full sm:w-auto px-8 py-4 rounded-full bg-material-primary text-acro-dark font-bold text-lg flex items-center justify-center gap-2 active:scale-95">
+                    <span>Select Tier</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <div class="flex items-center gap-2 px-5 py-3 text-sm text-gray-400 glass-card rounded-full border border-white/5">
+                    <i class="fas fa-coins text-yellow-400"></i> 
+                    <span>1 ACRON = <span class="text-white font-medium">Rp 62.500</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Pricing Cards -->
+        <div id="pricing" class="relative w-full space-y-8 sm:space-y-10 lg:space-y-6">
+
+            <!-- Blur Glow Effect -->
+            <div class="absolute -top-20 -right-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob pointer-events-none"></div>
+            <div class="absolute top-1/2 -left-20 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000 pointer-events-none"></div>
+
+            <!-- Tier 1: Pro+ -->
+            <div class="glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden ring-1 ring-white/10 hover:ring-material-primary/50 transition-all duration-300 group">
+                <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-400 to-cyan-300"></div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="font-bold text-2xl text-white group-hover:text-material-primary transition-colors">PRO+ Edition</h3>
+                        <p class="text-sm text-gray-400">Perfect for Gamers</p>
+                    </div>
+                    <div class="text-left sm:text-right bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-xl w-full sm:w-auto">
+                        <div class="text-3xl font-bold text-white">1 ACRON</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-tighter">Rp 62.500</div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-white/10 w-full my-6"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-microchip text-blue-400 w-5 text-center"></i> <span>GPU Gaming Optimization</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-gamepad text-blue-400 w-5 text-center"></i> <span>Gaming Emulators</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-paint-brush text-blue-400 w-5 text-center"></i> <span>Premium Themes (10+)</span>
+                    </div>
+                     <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-tachometer-alt text-blue-400 w-5 text-center"></i> <span>Performance Tweaks</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-cogs text-blue-400 w-5 text-center"></i> <span>Extra Configurations</span>
+                    </div>
+                </div>
+
+                <a href="https://trakteer.id/aleocrophic/tip?quantity=1" target="_blank" class="block w-full text-center py-4 rounded-xl bg-white/5 hover:bg-material-primary hover:text-acro-dark font-bold transition-all border border-white/10 active:scale-95">
+                    Get Pro+ (1 ACRON)
+                </a>
+            </div>
+
+            <!-- Tier 2: Ultimate -->
+            <div class="glass-card rounded-[2rem] p-6 sm:p-8 relative overflow-hidden ring-1 ring-purple-500/30 hover:ring-purple-400 transition-all duration-300 group transform hover:-translate-y-1">
+                 <!-- Shine effect -->
+                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
+
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 animate-pulse-slow"></div>
+
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 relative z-10">
+                    <div>
+                        <h3 class="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">ULTIMATE</h3>
+                        <p class="text-sm text-gray-400">For Hackers & Devs</p>
+                    </div>
+                    <div class="text-left sm:text-right bg-purple-500/10 sm:bg-transparent p-3 sm:p-0 rounded-xl w-full sm:w-auto">
+                        <div class="flex items-center sm:justify-end gap-2">
+                             <i class="fas fa-crown text-yellow-400 text-sm animate-bounce"></i>
+                             <div class="text-3xl font-bold text-white">2 ACRON</div>
+                        </div>
+                        <div class="text-xs text-gray-500 uppercase tracking-tighter">Rp 125.000</div>
+                    </div>
+                </div>
+
+                <div class="bg-purple-900/20 border border-purple-500/20 rounded-lg p-4 mb-6 relative z-10">
+                    <p class="text-xs text-purple-200 text-center font-semibold flex items-center justify-center gap-2">
+                        <span class="w-1 h-1 rounded-full bg-purple-400"></span>
+                        Includes all Pro+ features PLUS:
+                        <span class="w-1 h-1 rounded-full bg-purple-400"></span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 relative z-10">
+                     <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-user-secret text-purple-400 w-5 text-center"></i> <span>Pentest Suite</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-bug text-purple-400 w-5 text-center"></i> <span>Metasploit Framework</span>
+                    </div>
+                     <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-user-shield text-purple-400 w-5 text-center"></i> <span>Privacy Tools (Tor, VPN)</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-terminal text-purple-400 w-5 text-center"></i> <span>Dev Pro Pack</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-infinity text-purple-400 w-5 text-center"></i> <span>Lifetime Updates</span>
+                    </div>
+                     <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-user-lock text-yellow-400 w-5 text-center"></i> <span>VIP Priority Support</span>
+                    </div>
+                </div>
+
+                <a href="https://trakteer.id/aleocrophic/tip?quantity=2" target="_blank" class="block w-full text-center py-5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-600 hover:to-pink-600 text-white font-bold transition-all shadow-lg shadow-purple-900/50 relative z-10 active:scale-95">
+                    Unlock Ultimate Power (2 ACRON)
+                </a>
+                <p class="text-[10px] text-center text-gray-500 mt-3 uppercase tracking-widest">Support Aleocrophic development directly.</p>
+            </div>
+
+            
+            <!-- Footer in Column -->
+            <footer class="text-center text-xs text-gray-600 w-full pt-4">
+                &copy; 2025-2026 Aleocrophic. <span class="hidden sm:inline">Modded Ubuntu made with ❤️ by Rayhan.</span>
+                <div class="mt-1 text-[10px] opacity-50">Secure Key Delivery via Webhook.</div>
+            </footer>
+
+        </div>
+    </main>
+
+    <!-- LOGIC REAL PEMBAYARAN & CLAIM KEY -->
+    <script>
+        // Check if running via file:// protocol
+        if (window.location.protocol === 'file:') {
+            console.warn("Aplikasi berjalan via file:// protocol. PHP tidak akan berfungsi. Gunakan server lokal (XAMPP/PHP -S).");
+        }
+
+        function checkOrderStatus() {
+            Swal.fire({
+                title: '🔍 Cek Status & Claim Key',
+                input: 'email',
+                inputLabel: 'Masukkan email Trakteer kamu',
+                inputPlaceholder: 'email@contoh.com',
+                confirmButtonText: 'Cari License',
+                showCancelButton: true,
+                background: '#1e1b26',
+                color: '#fff',
+                showLoaderOnConfirm: true,
+                customClass: {
+                    input: 'text-center'
+                },
+                preConfirm: (email) => {
+                    return fetch(`check-status.php?email=${encodeURIComponent(email)}`)
+                        .then(response => {
+                            const contentType = response.headers.get("content-type");
+                            if (!contentType || !contentType.includes("application/json")) {
+                                return response.text().then(text => {
+                                    throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}...`);
+                                });
+                            }
+                            if (!response.ok) {
+                                return response.json().then(err => { 
+                                    throw new Error(err.message || `Error ${response.status}`);
+                                });
+                            }
+                            return response.json();
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Request failed: ${error.message}`);
+                        });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value.status === 'success') {
+                    const licenses = result.value.data;
+                    if (licenses.length === 1) {
+                        const lic = licenses[0];
+                        showKeyResult(lic.tier.replace('_', '+'), lic.license_key);
+                    } else {
+                        showMultipleLicenses(licenses);
+                    }
+                }
+            })
+        }
+
+        function showMultipleLicenses(licenses) {
+            let htmlContent = '<div class="space-y-4 max-h-96 overflow-y-auto pr-2">';
+            licenses.forEach(lic => {
+                const tierName = lic.tier.replace('_', '+');
+                htmlContent += `
+                    <div class="glass-card p-4 rounded-xl border border-white/10 text-left">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-material-primary">${tierName}</span>
+                            <span class="text-[10px] text-gray-500">${new Date(lic.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="key-display text-xs mb-2">${lic.license_key}</div>
+                        <button onclick="copyToClipboard('${lic.license_key}')" class="w-full py-1 text-xs bg-white/5 hover:bg-white/10 rounded transition-colors border border-white/10">
+                            Copy Key
+                        </button>
+                    </div>
+                `;
+            });
+            htmlContent += '</div>';
+
+            Swal.fire({
+                title: '🎉 License Ditemukan!',
+                html: htmlContent,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'Tutup',
+                background: '#1e1b26',
+                color: '#fff'
+            });
+        }
+
+        function showKeyResult(tierName, key) {
+            Swal.fire({
+                icon: 'success',
+                title: '🎉 License Key Ditemukan!',
+                html: `
+                    <div class="text-sm text-gray-300 mb-2">Tier: <b>${tierName}</b> (Permanent)</div>
+                    <div class="key-display" id="licenseKeyBox">${key}</div>
+                    <p class="text-xs text-gray-400 mt-2">Salin key ini ke Termux atau Modded Ubuntu kamu.</p>
+                `,
+                confirmButtonText: '📋 Copy Key',
+                showCancelButton: true,
+                cancelButtonText: 'Tutup'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    copyToClipboard(key);
+                }
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Copied to clipboard!',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    background: '#1e1b26',
+                    color: '#fff'
+                });
+            });
+        }
+    </script>
+</body>
+</html>
