@@ -14,7 +14,8 @@ Author: Aleocrophic Team
   <a href="#produk-harga">Produk & Harga</a> • 
   <a href="#paket-premium">Paket Premium</a> • 
   <a href="#faq">FAQ</a> • 
-  <a href="#kontak">Kontak</a>
+  <a href="#kontak">Kontak</a> • 
+  <a href="API_SPEC.md">API Spec</a>
 </p>
 
 ---
@@ -39,18 +40,36 @@ Author: Aleocrophic Team
 
 <table align="center">
   <tr>
-    <td align="center" width="350" valign="top">
+    <td align="center" width="230" valign="top">
+      <br>
+      <h3>FREE EDITION</h3>
+      <p><b>Gratis</b></p>
+      <img src="https://img.shields.io/badge/Tier-FREE-grey?style=for-the-badge" alt="Free Badge">
+      <br><br>
+      <ul align="left">
+        <li>✅ <b>Core Ubuntu Base</b><br><small>Sistem operasi dasar</small></li>
+        <li>✅ <b>Basic Optimizations</b><br><small>Optimasi sistem standar</small></li>
+        <li>✅ <b>1000+ Software Access</b><br><small>Akses repositori publik</small></li>
+        <li>✅ <b>Standard Support</b><br><small>Dukungan komunitas</small></li>
+      </ul>
+      <br>
+      <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu">
+        <img src="https://img.shields.io/badge/DOWNLOAD-GITHUB-grey?style=for-the-badge&logo=github" alt="Download Free">
+      </a>
+      <br><br>
+    </td>
+    <td align="center" width="230" valign="top">
       <br>
       <h3>PRO+ EDITION</h3>
       <p><b>Rp62.500 (1 ACRON)</b></p>
       <img src="https://img.shields.io/badge/Tier-PRO+-blue?style=for-the-badge" alt="Pro+ Badge">
       <br><br>
       <ul align="left">
-        <li>✅ <b>GPU Gaming Optimization</b><br><small>Optimalisasi performa GPU untuk gaming</small></li>
-        <li>✅ <b>Gaming Emulators</b><br><small>Dukungan lengkap PPSSPP, Dolphin, RetroArch</small></li>
-        <li>✅ <b>10+ Premium Themes</b><br><small>Koleksi tema eksklusif</small></li>
-        <li>✅ <b>Performance Tweaks</b><br><small>Penyempurnaan sistem maksimal</small></li>
-        <li>✅ <b>Extra Configurations</b><br><small>Konfigurasi tambahan terbaik</small></li>
+        <li>✅ <b>GPU Gaming Optimization</b></li>
+        <li>✅ <b>Gaming Emulators</b></li>
+        <li>✅ <b>10+ Premium Themes</b></li>
+        <li>✅ <b>Performance Tweaks</b></li>
+        <li>✅ <b>Extra Configurations</b></li>
       </ul>
       <br>
       <a href="https://trakteer.id/aleocrophic/tip?quantity=1">
@@ -58,7 +77,7 @@ Author: Aleocrophic Team
       </a>
       <br><br>
     </td>
-    <td align="center" width="350" valign="top">
+    <td align="center" width="230" valign="top">
       <br>
       <h3>ULTIMATE EDITION</h3>
       <p><b>Rp125.000 (2 ACRON)</b></p>
@@ -66,12 +85,12 @@ Author: Aleocrophic Team
       <br><br>
       <ul align="left">
         <li>🔥 <b>SEMUA FITUR PRO+ PLUS:</b></li>
-        <li>🛡️ <b>Penetration Testing Suite</b><br><small>Nmap, Wireshark, Hydra, SQLmap</small></li>
-        <li>💻 <b>Metasploit Framework</b><br><small>Platform testing keamanan terkemuka</small></li>
-        <li>🔒 <b>Privacy Tools</b><br><small>Tor, VPN, Enkripsi data</small></li>
-        <li>👨‍💻 <b>Developer Pro Pack</b><br><small>AWS/Azure CLI, Terraform, Ansible</small></li>
-        <li>🔄 <b>Lifetime Updates</b><br><small>Pemberitahuan pembaruan seumur hidup</small></li>
-        <li>⚡ <b>VIP Support</b><br><small>Respons garansi 6 jam</small></li>
+        <li>🛡️ <b>Penetration Testing Suite</b></li>
+        <li>💻 <b>Metasploit Framework</b></li>
+        <li>🔒 <b>Privacy Tools</b></li>
+        <li>👨‍💻 <b>Developer Pro Pack</b></li>
+        <li>🔄 <b>Lifetime Updates</b></li>
+        <li>⚡ <b>VIP Support</b></li>
       </ul>
       <br>
       <a href="https://trakteer.id/aleocrophic/tip?quantity=2">

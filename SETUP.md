@@ -56,7 +56,7 @@ Konfigurasikan variabel berikut di platform deployment Anda (Vercel/Netlify):
 ## 5. Integrasi Trakteer
 1. Masuk ke dashboard Trakteer.
 2. Buka menu **Integrasi > Webhook**.
-3. Masukkan URL Webhook: `https://your-domain.com/api/ACRO%20PREMIUM/webhook.php` (atau `https://your-domain.com/webhook`).
+3. Masukkan URL Webhook: `https://your-domain.com/api/premium/webhook.php` (atau `https://your-domain.com/webhook`).
 4. Salin **Key/Token** dan masukkan ke variabel lingkungan `TRAKTEER_TOKEN`.
 
 ## 6. Testing & Validasi
@@ -70,7 +70,7 @@ npm run test:config
 Anda juga dapat melakukan test webhook menggunakan `curl`:
 
 ```bash
-curl -X POST https://your-domain.com/api/ACRO%20PREMIUM/webhook.php \
+curl -X POST https://your-domain.com/api/premium/webhook.php \
 -H "Content-Type: application/json" \
 -H "X-Trakteer-Hash: YOUR_HMAC_HERE" \
 -d '{

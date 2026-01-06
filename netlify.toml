@@ -6,12 +6,12 @@
 
 [[redirects]]
   from = "/webhook"
-  to = "/api/webhook.php"
+  to = "/api/premium/webhook.php"
   status = 200
 
 [[redirects]]
   from = "/check-status"
-  to = "/api/check-status.php"
+  to = "/api/premium/check-status.php"
   status = 200
 
 # Note: Netlify requires a specific setup (like a build plugin or custom runtime) 

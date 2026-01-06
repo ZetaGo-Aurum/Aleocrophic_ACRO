@@ -27,28 +27,10 @@ set_error_handler(function ($severity, $message, $file, $line) {
 });
 
 require_once 'db.php';
+$config = require 'config.php';
 
 // --- KONFIGURASI ---
-$TRAKTEER_TOKEN = getenv('TRAKTEER_TOKEN') ?: 'trhook-nZcr7Rquyhir9iiFDpVuWfoF'; 
-
-// --- FUNGSI GENERATE KEY ---
-function generateLicenseKey($tier) {
-    // Format: ACRO-[TIER]-[8 chars]-[4 chars]
-    $prefix = ($tier === 'ULTIMATE') ? 'ACRO-ULT-' : 'ACRO-PP-';
-    
-    try {
-        $bytes1 = random_bytes(4); // 8 hex characters
-        $bytes2 = random_bytes(2); // 4 hex characters
-    } catch (Exception $e) {
-        $bytes1 = openssl_random_pseudo_bytes(4);
-        $bytes2 = openssl_random_pseudo_bytes(2);
-    }
-    
-    $part1 = strtoupper(bin2hex($bytes1));
-    $part2 = strtoupper(bin2hex($bytes2));
-    
-    return $prefix . $part1 . '-' . $part2;
-}
+$TRAKTEER_TOKEN = $config['trakteer_token'];
 
 // --- LOGIKA UTAMA ---
 

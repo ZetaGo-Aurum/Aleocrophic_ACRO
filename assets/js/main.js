@@ -148,7 +148,7 @@ async function checkOrderStatus() {
             color: '#ffffff'
         });
 
-        const response = await fetch(`api/ACRO PREMIUM/check-status.php?email=${encodeURIComponent(email)}`);
+        const response = await fetch(`api/premium/check-status.php?email=${encodeURIComponent(email)}`);
         const result = await response.json();
 
         if (result.status === 'success') {

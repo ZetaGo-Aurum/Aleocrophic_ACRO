@@ -5,30 +5,25 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- **Unit Testing**: Added `tests/readme_test.html` to verify `fetchGitHubReadme` functionality including retries and branch fallbacks.
-- **Monitoring**: Implemented `logErrorToService` in `assets/js/main.js` to structure error logging and dispatch `app:error` events.
-- **Validation**: Added `scripts/validate-config.js` to ensure Vercel configuration validity.
-- **Mobile Optimization**:
-  - Added z-index management for navbar (`nav.fixed { z-index: 100; }`).
-  - Adjusted top margin for mobile devices to prevent content overlap.
-  - Optimized viewport meta tag.
-  - Reduced glassmorphism blur intensity on mobile for better performance.
+- **Free Tier Implementation**:
+  - Added "FREE Edition" card to `index.html` with a direct link to the GitHub repository.
+  - Updated `README.md` comparison table to include the Free tier.
+  - Configured automatic redirect via button link to the relevant GitHub repo.
+- **Backend Refactoring**: 
+  - Implemented environment variable management with `.env` loader in `db.php`.
+  - Added `api/premium/config.php` for centralized configuration (auto-approval, logging).
+  - Introduced auto-approval mechanism for VIP emails and domains.
+- **Documentation**: Added `API_SPEC.md` for detailed endpoint documentation.
 
 ### Changed
 - **Directory Structure**:
-  - Moved PHP files to `api/ACRO PREMIUM/` to align with Vercel Serverless Functions.
-  - Updated `vercel.json` to use correct pattern `api/ACRO PREMIUM/*.php`.
-  - Updated `netlify.toml` redirect rules.
-- **Frontend Logic**:
-  - Refactored `fetchGitHubReadme` to include retry logic (max 2 retries).
-  - Added fallback to `master` branch if `main` branch 404s.
-  - Added cache-busting parameter to GitHub API requests.
-  - Improved error handling and user feedback in the UI.
-- **Documentation**:
-  - Rewrote `README.md` to remove open-source details and highlight proprietary status.
-  - Updated `SETUP.md` with new webhook URL paths.
+  - Renamed `api/ACRO PREMIUM/` to `api/premium/` to resolve URL encoding issues and 404 errors.
+  - Updated all references in `assets/js/main.js`, `vercel.json`, and `netlify.toml`.
+- **Backend Improvements**:
+  - Enhanced error handling in `check-status.php` with structured JSON responses and server-side logging.
+  - Standardized license key generation format (`ACRO-ULT-*` and `ACRO-PP-*`).
 
 ### Fixed
-- **405 Method Not Allowed**: Fixed CORS issues in `webhook.php` and `check-status.php` by handling OPTIONS requests and adding correct headers.
-- **GitHub README 404**: Addressed by adding branch fallback logic.
-- **Mobile Layout**: Fixed header overlapping content on small screens.
+- **API 404/500 Errors**: Resolved by correcting directory paths and improving database connection error handling.
+- **Mobile Layout**: (Previous fixes preserved) z-index management and overflow issues.
+
