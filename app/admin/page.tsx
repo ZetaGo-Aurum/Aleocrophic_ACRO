@@ -99,11 +99,25 @@ export default function AdminDashboard() {
     return () => unsubUsers();
   }, []);
 
+  // Clean config before saving (remove undefined values, replace with null or delete)
+  const cleanConfigForSave = (cfg: PricingConfig): Record<string, any> => {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(cfg)) {
+      if (value !== undefined) {
+        cleaned[key] = value;
+      } else {
+        cleaned[key] = null; // Firebase accepts null, not undefined
+      }
+    }
+    return cleaned;
+  };
+
   const handleSaveConfig = async () => {
     if (!config) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'config', 'pricing'), config);
+      const cleanedConfig = cleanConfigForSave(config);
+      await setDoc(doc(db, 'config', 'pricing'), cleanedConfig);
       alert('Pricing configuration updated successfully!');
     } catch (error) {
       console.error('Error saving config:', error);
@@ -138,19 +152,33 @@ export default function AdminDashboard() {
              <div>
                <label className="block text-sm text-gray-400 mb-1">PRO+ Price</label>
                <input 
-                 type="number" 
-                 value={config?.proplus_price ?? 0} 
-                 onChange={(e) => setConfig(prev => prev ? {...prev, proplus_price: parseFloat(e.target.value) || 0} : null)}
+                 type="text" 
+                 inputMode="decimal"
+                 value={config?.proplus_price?.toString() ?? ''} 
+                 onChange={(e) => {
+                   const val = e.target.value;
+                   if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                     setConfig(prev => prev ? {...prev, proplus_price: val === '' ? 0 : parseFloat(val)} : null);
+                   }
+                 }}
                  className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-teal-500 outline-none"
+                 placeholder="0"
                />
              </div>
              <div>
                <label className="block text-sm text-gray-400 mb-1">ULTIMATE Price</label>
                <input 
-                 type="number" 
-                 value={config?.ultimate_price ?? 0} 
-                 onChange={(e) => setConfig(prev => prev ? {...prev, ultimate_price: parseFloat(e.target.value) || 0} : null)}
+                 type="text"
+                 inputMode="decimal" 
+                 value={config?.ultimate_price?.toString() ?? ''} 
+                 onChange={(e) => {
+                   const val = e.target.value;
+                   if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                     setConfig(prev => prev ? {...prev, ultimate_price: val === '' ? 0 : parseFloat(val)} : null);
+                   }
+                 }}
                  className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-teal-500 outline-none"
+                 placeholder="0"
                />
              </div>
           </div>
@@ -323,21 +351,26 @@ export default function AdminDashboard() {
                         </label>
                     </div>
                  </div>
-                 
+
                  {/* Timed Config */}
-                 {config?.broadcast_permanent === false && !config?.broadcast_target_time && (
-                   <div>
-                      <label className="block text-sm text-gray-400 mb-1">Seconds to Show</label>
-                      <input 
-                        type="number"
-                        min="1"
-                        value={config?.broadcast_duration || 10}
-                        onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_duration: parseInt(e.target.value) || 5} : null)}
-                        className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
-                        placeholder="Seconds"
-                     />
-                   </div>
-                 )}
+                  {config?.broadcast_permanent === false && !config?.broadcast_target_time && (
+                    <div>
+                       <label className="block text-sm text-gray-400 mb-1">Seconds to Show</label>
+                       <input
+                         type="text"
+                         inputMode="numeric"
+                         value={config?.broadcast_duration?.toString() ?? ''}
+                         onChange={(e) => {
+                           const val = e.target.value;
+                           if (val === '' || /^\d*$/.test(val)) {
+                             setConfig(prev => prev ? {...prev, broadcast_duration: val === '' ? 10 : parseInt(val)} : null);
+                           }
+                         }}
+                         className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+                         placeholder="10"
+                      />
+                    </div>
+                  )}
 
                  {/* Countdown Config */}
                  {!!config?.broadcast_target_time && (
