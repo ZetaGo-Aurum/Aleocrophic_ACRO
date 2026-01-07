@@ -33,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="md:hidden bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
          <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500">ACRO Admin</span>
          <div className="flex space-x-4">
-            <a href="https://trakteer.id/manage" target="_blank" className="text-sm text-yellow-400 border border-yellow-400 px-2 py-1 rounded">
+            <a href="https://trakteer.id/manage/balance" target="_blank" className="text-sm text-yellow-400 border border-yellow-400 px-2 py-1 rounded">
                Trakteer
             </a>
             <a href="/" className="text-sm text-gray-400">Exit</a>
@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <a href="/admin" className="block py-2 px-4 rounded hover:bg-gray-700 text-gray-300 hover:text-white transition">
             Dashboard
           </a>
-          <a href="https://trakteer.id/manage" target="_blank" className="block py-2 px-4 rounded hover:bg-gray-700 text-yellow-500 hover:text-yellow-400 transition">
+          <a href="https://trakteer.id/manage/balance" target="_blank" className="block py-2 px-4 rounded hover:bg-gray-700 text-yellow-500 hover:text-yellow-400 transition">
              💰 Trakteer Dash
           </a>
           <div className="h-px bg-gray-700 my-4"></div>
