@@ -150,18 +150,18 @@ export default function Home() {
     <main>
       {/* Broadcast Banner */}
       {showBroadcast && (
-         <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl">
-            <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-               <div className="flex items-center space-x-3">
-                  <span className="text-2xl animate-pulse">📢</span>
-                  <p className="font-bold text-sm md:text-base drop-shadow-md">
+         <div className="fixed top-0 left-0 right-0 z-50 h-10 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl flex items-center">
+            <div className="container mx-auto px-4 flex justify-center items-center h-full">
+               <div className="flex items-center space-x-3 overflow-hidden">
+                  <span className="text-xl animate-pulse">📢</span>
+                  <p className="font-bold text-sm md:text-base drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
                      {pricingConfig.broadcast_message}
                   </p>
                </div>
                {!pricingConfig.broadcast_permanent && (
                  <button 
                    onClick={() => setShowBroadcast(false)}
-                   className="ml-4 text-white hover:text-gray-200 transition"
+                   className="absolute right-4 text-white hover:text-gray-200 transition"
                  >
                    ✕
                  </button>
@@ -184,7 +184,10 @@ export default function Home() {
       />
 
       {/* Navigation */}
-      <nav className={`nav-glass ${showBroadcast ? 'mt-12' : ''} transition-all duration-300`}>
+      <nav 
+        className={`nav-glass transition-all duration-300 ${showBroadcast ? 'top-10' : 'top-0'}`}
+        style={{ marginTop: 0 }} // Force no margin
+      >
         <div className="nav-brand">
           <img src="/acron.png" alt="ACRON" className="nav-logo" />
           <span className="nav-title gradient-text">ACRO</span>

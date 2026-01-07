@@ -86,6 +86,11 @@ export default function AdminDashboard() {
         } as UserData);
       });
       setUsers(userList);
+      setStats({
+          totalUsers: userList.length,
+          totalRevenue: 0, // Placeholder
+          totalLicenses: 0 // Placeholder
+      });
     });
 
     return () => unsubUsers();
