@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/lib/auth-context';
 
 type Product = {
@@ -10,18 +10,36 @@ type Product = {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number; // For strikethrough
   imageUrl?: string;
   fileUrl?: string;
-  layout?: 'grid' | 'list';
+  layout: 'grid' | 'list' | 'featured';
   highlight?: boolean;
+  applyGlobalDiscount?: boolean;
+};
+
+type PricingConfig = {
+  discount_active: boolean;
+  discount_percent: number;
 };
 
 export default function ProductManager() {
   const { user, loading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [pricingConfig, setPricingConfig] = useState<PricingConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
+
+  // Fetch Pricing Config for discount info
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'config', 'pricing'), (docSnap) => {
+      if (docSnap.exists()) {
+        setPricingConfig(docSnap.data() as PricingConfig);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     if (user?.email !== 'deltaastra24@gmail.com') return;
@@ -46,20 +64,22 @@ export default function ProductManager() {
     if (!currentProduct.name || !currentProduct.price) return;
 
     try {
+      const productData = {
+        name: currentProduct.name,
+        description: currentProduct.description || '',
+        price: Number(currentProduct.price),
+        originalPrice: currentProduct.originalPrice ? Number(currentProduct.originalPrice) : null,
+        imageUrl: currentProduct.imageUrl || '',
+        fileUrl: currentProduct.fileUrl || '',
+        layout: currentProduct.layout || 'grid',
+        highlight: currentProduct.highlight || false,
+        applyGlobalDiscount: currentProduct.applyGlobalDiscount || false
+      };
+
       if (currentProduct.id) {
-        // Update
-        await updateDoc(doc(db, 'products', currentProduct.id), {
-          ...currentProduct,
-          price: Number(currentProduct.price)
-        });
+        await updateDoc(doc(db, 'products', currentProduct.id), productData);
       } else {
-        // Create
-        await addDoc(collection(db, 'products'), {
-          ...currentProduct,
-          price: Number(currentProduct.price),
-          layout: currentProduct.layout || 'grid',
-          highlight: currentProduct.highlight || false
-        });
+        await addDoc(collection(db, 'products'), productData);
       }
       setIsEditing(false);
       setCurrentProduct({});
@@ -83,6 +103,18 @@ export default function ProductManager() {
     }
   };
 
+  const getDisplayPrice = (product: Product) => {
+    if (product.applyGlobalDiscount && pricingConfig?.discount_active && pricingConfig.discount_percent > 0) {
+      const discounted = product.price * ((100 - pricingConfig.discount_percent) / 100);
+      return { price: discounted.toFixed(1), original: product.price, hasDiscount: true, percent: pricingConfig.discount_percent };
+    }
+    if (product.originalPrice && product.originalPrice > product.price) {
+      const percent = Math.round((1 - product.price / product.originalPrice) * 100);
+      return { price: product.price, original: product.originalPrice, hasDiscount: true, percent };
+    }
+    return { price: product.price, original: null, hasDiscount: false, percent: 0 };
+  };
+
   if (loading || isLoading) return <div className="p-8 text-white">Loading...</div>;
   if (user?.email !== 'deltaastra24@gmail.com') return <div className="p-8 text-red-500">Access Denied</div>;
 
@@ -94,50 +126,82 @@ export default function ProductManager() {
              📦 Product Manager
           </h1>
           <button 
-             onClick={() => { setCurrentProduct({}); setIsEditing(true); }}
+             onClick={() => { setCurrentProduct({ layout: 'grid' }); setIsEditing(true); }}
              className="px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 rounded hover:opacity-90 transition font-bold"
           >
              + Add Product
           </button>
         </div>
 
+        {/* Discount Status Banner */}
+        {pricingConfig?.discount_active && (
+          <div className="mb-6 p-3 bg-yellow-900/30 border border-yellow-600 rounded-lg text-yellow-300 text-sm">
+            🎉 Global Discount Active: <strong>{pricingConfig.discount_percent}% OFF</strong> — Products with "Apply Global Discount" will show this discount.
+          </div>
+        )}
+
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {products.map(product => (
-              <div key={product.id} className={`bg-gray-800 rounded-xl p-4 border ${product.highlight ? 'border-yellow-500' : 'border-gray-700'}`}>
-                 <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg">{product.name}</h3>
-                    <span className="text-yellow-400 font-mono">{product.price} ACRON</span>
-                 </div>
-                 <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
-                 <div className="flex space-x-2">
-                    <button 
-                      onClick={() => { setCurrentProduct(product); setIsEditing(true); }}
-                      className="flex-1 bg-gray-700 hover:bg-gray-600 py-1 rounded text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(product.id)}
-                      className="flex-1 bg-red-900/50 hover:bg-red-900 py-1 rounded text-sm text-red-400"
-                    >
-                      Delete
-                    </button>
-                 </div>
-              </div>
-           ))}
+           {products.map(product => {
+             const priceInfo = getDisplayPrice(product);
+             return (
+               <div key={product.id} className={`relative bg-gray-800 rounded-xl p-4 border ${product.highlight ? 'border-yellow-500 shadow-yellow-500/20 shadow-lg' : 'border-gray-700'}`}>
+                  {/* Discount Ribbon */}
+                  {priceInfo.hasDiscount && (
+                    <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                      -{priceInfo.percent}%
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-start mb-2">
+                     <div>
+                       <span className="text-xs text-gray-500 uppercase">{product.layout}</span>
+                       <h3 className="font-bold text-lg">{product.name}</h3>
+                     </div>
+                     <div className="text-right">
+                       {priceInfo.hasDiscount && (
+                         <span className="text-gray-500 line-through text-sm block">{priceInfo.original} ACRON</span>
+                       )}
+                       <span className={`font-mono font-bold ${priceInfo.hasDiscount ? 'text-green-400' : 'text-yellow-400'}`}>
+                         {priceInfo.price} ACRON
+                       </span>
+                     </div>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+                  
+                  {product.applyGlobalDiscount && (
+                    <div className="text-xs text-purple-400 mb-2">🔗 Uses Global Discount</div>
+                  )}
+                  
+                  <div className="flex space-x-2">
+                     <button 
+                       onClick={() => { setCurrentProduct(product); setIsEditing(true); }}
+                       className="flex-1 bg-gray-700 hover:bg-gray-600 py-1 rounded text-sm"
+                     >
+                       Edit
+                     </button>
+                     <button 
+                       onClick={() => handleDelete(product.id)}
+                       className="flex-1 bg-red-900/50 hover:bg-red-900 py-1 rounded text-sm text-red-400"
+                     >
+                       Delete
+                     </button>
+                  </div>
+               </div>
+             );
+           })}
            {products.length === 0 && <p className="text-gray-500 col-span-3 text-center">No products found.</p>}
         </div>
 
         {/* Edit Modal */}
         {isEditing && (
            <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-              <div className="bg-gray-800 rounded-2xl w-full max-w-lg p-6 border border-gray-700">
+              <div className="bg-gray-800 rounded-2xl w-full max-w-lg p-6 border border-gray-700 max-h-[90vh] overflow-y-auto">
                  <h2 className="text-xl font-bold mb-4">{currentProduct.id ? 'Edit Product' : 'New Product'}</h2>
                  
                  <div className="space-y-4">
                     <div>
-                       <label className="block text-sm text-gray-400 mb-1">Product Name</label>
+                       <label className="block text-sm text-gray-400 mb-1">Product Name *</label>
                        <input 
                          type="text"
                          value={currentProduct.name || ''}
@@ -146,6 +210,20 @@ export default function ProductManager() {
                          placeholder="e.g. Premium Script v4"
                        />
                     </div>
+                    
+                    <div>
+                       <label className="block text-sm text-gray-400 mb-1">Layout Preset</label>
+                       <select
+                         value={currentProduct.layout || 'grid'}
+                         onChange={(e) => setCurrentProduct({...currentProduct, layout: e.target.value as 'grid' | 'list' | 'featured'})}
+                         className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
+                       >
+                         <option value="grid">Grid (Standard)</option>
+                         <option value="list">List (Compact)</option>
+                         <option value="featured">Featured (Large)</option>
+                       </select>
+                    </div>
+                    
                     <div>
                        <label className="block text-sm text-gray-400 mb-1">Description</label>
                        <textarea 
@@ -155,15 +233,31 @@ export default function ProductManager() {
                          placeholder="Product details..."
                        />
                     </div>
-                    <div>
-                       <label className="block text-sm text-gray-400 mb-1">Price (ACRON)</label>
-                       <input 
-                         type="number"
-                         value={currentProduct.price || 0}
-                         onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})}
-                         className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
-                       />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                       <div>
+                          <label className="block text-sm text-gray-400 mb-1">Price (ACRON) *</label>
+                          <input 
+                            type="number"
+                            step="0.1"
+                            value={currentProduct.price || 0}
+                            onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})}
+                            className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
+                          />
+                       </div>
+                       <div>
+                          <label className="block text-sm text-gray-400 mb-1">Original Price (Optional)</label>
+                          <input 
+                            type="number"
+                            step="0.1"
+                            value={currentProduct.originalPrice || ''}
+                            onChange={(e) => setCurrentProduct({...currentProduct, originalPrice: e.target.value ? Number(e.target.value) : undefined})}
+                            className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
+                            placeholder="For strikethrough"
+                          />
+                       </div>
                     </div>
+                    
                     <div>
                        <label className="block text-sm text-gray-400 mb-1">Image URL (Optional)</label>
                        <input 
@@ -174,6 +268,7 @@ export default function ProductManager() {
                          placeholder="https://..."
                        />
                     </div>
+                    
                     <div>
                         <label className="block text-sm text-gray-400 mb-1">File URL / Download Link</label>
                         <input 
@@ -184,15 +279,25 @@ export default function ProductManager() {
                           placeholder="Google Drive, Mega, or Direct Link"
                         />
                      </div>
-                     <div className="flex items-center space-x-4">
-                        <label className="flex items-center space-x-2 text-sm">
+                     
+                     <div className="space-y-2 pt-2 border-t border-gray-700">
+                        <label className="flex items-center space-x-2 text-sm cursor-pointer">
                            <input 
                              type="checkbox"
                              checked={currentProduct.highlight || false}
                              onChange={(e) => setCurrentProduct({...currentProduct, highlight: e.target.checked})}
                              className="rounded bg-gray-900 border-gray-600 text-yellow-500"
                            />
-                           <span className="text-yellow-400">Highlight (Golden Border)</span>
+                           <span className="text-yellow-400">⭐ Highlight (Golden Border)</span>
+                        </label>
+                        <label className="flex items-center space-x-2 text-sm cursor-pointer">
+                           <input 
+                             type="checkbox"
+                             checked={currentProduct.applyGlobalDiscount || false}
+                             onChange={(e) => setCurrentProduct({...currentProduct, applyGlobalDiscount: e.target.checked})}
+                             className="rounded bg-gray-900 border-gray-600 text-purple-500"
+                           />
+                           <span className="text-purple-400">🔗 Apply Global Discount (from Pricing Config)</span>
                         </label>
                      </div>
                  </div>

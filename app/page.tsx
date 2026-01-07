@@ -16,6 +16,7 @@ export default function Home() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
   const [pricingConfig, setPricingConfig] = useState<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'os' | 'store'>('os');
 
   // Fetch Pricing Config
   useEffect(() => {
@@ -193,9 +194,8 @@ export default function Home() {
             <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 hover:text-white">✕</button>
          </div>
          <div className="p-4 space-y-4">
-            <a href="#pricing" onClick={() => setIsSidebarOpen(false)} className="block text-gray-300 hover:text-white">Pricing</a>
-            <a href="#products" onClick={() => setIsSidebarOpen(false)} className="block text-gray-300 hover:text-white">More Products</a>
-            <a href="#gallery" onClick={() => setIsSidebarOpen(false)} className="block text-gray-300 hover:text-white">Gallery</a>
+            <button onClick={() => { setActiveTab('os'); setIsSidebarOpen(false); }} className={`block w-full text-left ${activeTab === 'os' ? 'text-teal-400 font-bold' : 'text-gray-300'} hover:text-white`}>ACRO OS</button>
+            <button onClick={() => { setActiveTab('store'); setIsSidebarOpen(false); }} className={`block w-full text-left ${activeTab === 'store' ? 'text-teal-400 font-bold' : 'text-gray-300'} hover:text-white`}>Official Store</button>
             {user ? (
                <div className="pt-4 border-t border-gray-700">
                   <div className="flex items-center space-x-3 mb-4">
@@ -226,9 +226,8 @@ export default function Home() {
         </div>
         
         <div className="nav-menu flex items-center h-full pr-4 hidden md:flex">
-          <a href="#pricing" className="nav-link">Pricing</a>
-          <a href="#products" className="nav-link">Store</a>
-          <a href="#gallery" className="nav-link">Gallery</a>
+          <button onClick={() => setActiveTab('os')} className={`nav-link ${activeTab === 'os' ? 'text-teal-400 border-b-2 border-teal-400' : ''}`}>ACRO OS</button>
+          <button onClick={() => setActiveTab('store')} className={`nav-link ${activeTab === 'store' ? 'text-teal-400 border-b-2 border-teal-400' : ''}`}>Store</button>
           
           {loading ? (
             <div className="nav-skeleton" />
@@ -282,6 +281,9 @@ export default function Home() {
          </div>
       )}
 
+      {/* === ACRO OS TAB === */}
+      {activeTab === 'os' && (
+      <>
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-bg-effect" />
@@ -602,9 +604,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </>
+      )}
 
-      {/* Store Section (New) */}
-      <section id="products" className="py-20 bg-gray-900 relative">
+      {/* === STORE TAB === */}
+      {activeTab === 'store' && (
+      <section id="products" className="min-h-screen py-20 bg-gray-900 relative">
          <div className="container mx-auto px-6 relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text" data-aos="fade-up">
                Official Store
@@ -650,6 +655,7 @@ export default function Home() {
             </div>
          </div>
       </section>
+      )}
 
       {/* Footer */}
       <footer className="footer">
