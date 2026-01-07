@@ -1,34 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAdminDb } from '@/lib/firebase-admin-init';
 import { v4 as uuidv4 } from 'uuid';
-
-// Initialize Firebase Admin (reuse logic)
-let adminApp: App;
-
-function getAdminApp() {
-  if (getApps().length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : null;
-    
-    if (serviceAccount) {
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: 'server-media-75fdc'
-      });
-    } else {
-      adminApp = initializeApp({
-        projectId: 'server-media-75fdc'
-      });
-    }
-  }
-  return getApps()[0];
-}
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
-    const { uid, tier, tierName, price } = await request.json();
+    const db = getAdminDb(); // Centralized Init (Throws clear error if env missing)
+    
+    const body = await request.json();
+    const { uid, tier, tierName, price } = body;
 
     if (!uid || !tier || !price) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });

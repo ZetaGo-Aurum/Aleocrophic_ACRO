@@ -1,29 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-// Initialize Firebase Admin (reuse logic)
-let adminApp: App;
-
-function getAdminApp() {
-  if (getApps().length === 0) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : null;
-    
-    if (serviceAccount) {
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: 'server-media-75fdc'
-      });
-    } else {
-      adminApp = initializeApp({
-        projectId: 'server-media-75fdc'
-      });
-    }
-  }
-  return getApps()[0];
-}
+import { getAdminDb } from '@/lib/firebase-admin-init';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,9 +14,8 @@ export async function POST(request: NextRequest) {
     
     console.log(`Verifying license: ${licenseKey}`);
     
-    // Initialize Firebase Admin
-    const app = getAdminApp();
-    const db = getFirestore(app);
+    // Initialize Firebase Admin (Centralized)
+    const db = getAdminDb();
     
     // Check license in "licenses" collection
     const licenseDoc = await db.collection('licenses').doc(licenseKey).get();

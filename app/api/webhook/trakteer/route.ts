@@ -1,32 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAdminDb } from '@/lib/firebase-admin-init';
+import { FieldValue } from 'firebase-admin/firestore';
+import * as crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
-
-// Initialize Firebase Admin
-let adminApp: App;
-
-function getAdminApp() {
-  if (getApps().length === 0) {
-    // For Vercel deployment, use service account from environment variable
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : null;
-    
-    if (serviceAccount) {
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: 'server-media-75fdc'
-      });
-    } else {
-      // Fallback for development - use default credentials
-      adminApp = initializeApp({
-        projectId: 'server-media-75fdc'
-      });
-    }
-  }
-  return getApps()[0];
-}
 
 interface TrakteerWebhookPayload {
   id: string;
