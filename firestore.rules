@@ -3,25 +3,31 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // User Profile Rules
+    // Combined security for ACRO (protects balance) and User's other apps (allows other updates)
     match /users/{userId} {
-      // User can read their own profile
-      allow read: if request.auth != null && request.auth.uid == userId;
+      allow read, create: if request.auth != null && request.auth.uid == userId;
       
-      // User can create their own profile on signup
-      allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // User can ONLY update specific fields (display name, photo)
-      // PREVENTS user from hacking their own balance or licenses
+      // Update Rule: User can update their data, BUT CANNOT touch sensitive ACRO fields.
+      // This allows your "Other Web" to work while keeping ACRO secure.
       allow update: if request.auth != null && request.auth.uid == userId
-                    && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['displayName', 'photoURL', 'email', 'updatedAt']);
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                        .hasAny(['acronBalance', 'licenses', 'isPro', 'tier', 'lastPurchase']);
     }
     
-    // License Collection Rules
+    // License Collection Rules (ACRO Server Only)
     match /licenses/{licenseKey} {
-      // Only readable/writable by Server Admin SDK (which bypasses rules)
-      // Public users cannot query this directly
       allow read, write: if false;
+    }
+
+    // Rules for 'posts' (Requested by User)
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null 
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.content.size() < 1000;
+      
+      allow update, delete: if request.auth != null && resource.data.authorId == request.auth.uid;
     }
   }
 }

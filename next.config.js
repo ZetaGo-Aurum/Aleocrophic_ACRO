@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     domains: ['raw.githubusercontent.com'],
   },
+  serverExternalPackages: ['firebase-admin'],
 }
 
 module.exports = nextConfig
