@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       const userData = userDoc.data();
       const currentBalance = userData?.acronBalance || 0;
 
-      if (currentBalance < price) {
-        throw new Error('Insufficient balance');
+      if (currentBalance < finalPrice) {
+        throw new Error(`Insufficient balance. Required: ${finalPrice} ACRON, Available: ${currentBalance} ACRON`);
       }
 
       // Generate License
@@ -72,14 +72,16 @@ export async function POST(request: NextRequest) {
       const newLicense = {
         key: licenseKey,
         tier,
-        tierName,
+        tierName: tierName || (tier === 'ultimate' ? 'Ultimate Edition' : 'Pro+ Edition'),
         createdAt: new Date().toISOString(),
         isActive: true,
+        pricePaid: finalPrice,
         transactionId: `PUR-${Date.now()}`
       };
 
       // Update User Data
-      const newBalance = currentBalance - price;
+      // Use toFixed(4) then Number() to handle floating point math cleanly for currency
+      const newBalance = Number((currentBalance - finalPrice).toFixed(4));
 
       t.update(userRef, {
         acronBalance: newBalance,
