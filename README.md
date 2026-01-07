@@ -1,274 +1,80 @@
-<!--
-SEO Meta Tags
-Description: Aleocrophic ACRO Premium - Solusi lisensi otomatis untuk Modded Ubuntu.
-Keywords: Aleocrophic, ACRO Premium, Modded Ubuntu, Trakteer, License Key, Automation
-Author: Aleocrophic Team
--->
+# ACRO Payment Gateway
 
-<div align="center">
-  <img src="https://img.shields.io/badge/ALOCROPHIC-ACRO_PREMIUM-blueviolet?style=for-the-badge&logo=codeproject" alt="Brand Logo">
-</div>
-
-<p align="center">
-  <a href="#beranda">Beranda</a> • 
-  <a href="#produk-harga">Produk & Harga</a> • 
-  <a href="#paket-premium">Paket Premium</a> • 
-  <a href="#faq">FAQ</a> • 
-  <a href="#kontak">Kontak</a> • 
-  <a href="API_SPEC.md">API Spec</a>
-</p>
+**Closed Source - Proprietary Software**  
+**© 2024-2026 ZetaGo-Aurum | ALEOCROPHIC Brand**
 
 ---
 
-<div id="beranda" align="center">
-  <h1>🚀 ALEOCROPHIC ACRO PREMIUM</h1>
-  <p><i>Solusi Infrastruktur Internal & Otomasi Lisensi Modern</i></p>
-  <img src="https://img.shields.io/badge/Status-Proprietary-red?style=flat-square" alt="Proprietary">
-  <img src="https://img.shields.io/badge/Version-v1.0.2--stable-blue?style=flat-square" alt="Version">
-  <img src="https://img.shields.io/badge/Release-Januari_2026-green?style=flat-square" alt="Release Date">
-</div>
+## Overview
 
-<br>
-
-<div align="center">
-  <p><b>Aleocrophic Payments</b> adalah infrastruktur internal yang dirancang untuk mengotomatiskan distribusi license key produk digital. Proyek ini berfungsi sebagai jembatan antara platform pembayaran resmi dan pengguna akhir.</p>
-  
-  <p>⚠️ <b>PENTING:</b> Fitur utama tersedia di <b>PRO tanpa PLUS</b>. Edisi <b>PRO+</b> dan <b>ULTIMATE</b> adalah paket tambahan (add-on) dan license key. Anda <b>WAJIB</b> mendownload base system <b>ACRO OS ubuntu-modded</b> dari GitHub sebelum menggunakan license key.</p>
-  
-  <a href="https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO">
-    <img src="https://img.shields.io/badge/DOWNLOAD-ACRO_OS_UBUNTU--MODDED-blue?style=for-the-badge&logo=github" alt="Download Base OS">
-  </a>
-</div>
-
-<br>
-
-<h2 id="produk-harga" align="center">💎 Produk & Harga</h2>
-
-<table align="center">
-  <tr>
-    <td align="center" width="230" valign="top">
-      <br>
-      <h3>PRO tanpa Plus</h3>
-      <p><b>Gratis</b></p>
-      <img src="https://img.shields.io/badge/Tier-PRO_tanpa_Plus-grey?style=for-the-badge" alt="PRO tanpa Plus Badge">
-      <br><br>
-      <ul align="left">
-        <li>✅ <b>Core Ubuntu Base</b><br><small>Sistem operasi dasar</small></li>
-        <li>✅ <b>Basic Optimizations</b><br><small>Optimasi sistem standar</small></li>
-        <li>✅ <b>1000+ Software Access</b><br><small>Akses repositori publik</small></li>
-        <li>✅ <b>Standard Support</b><br><small>Dukungan komunitas</small></li>
-      </ul>
-      <br>
-      <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu">
-        <img src="https://img.shields.io/badge/DOWNLOAD-GITHUB-grey?style=for-the-badge&logo=github" alt="Download PRO tanpa Plus">
-      </a>
-      <br><br>
-    </td>
-    <td align="center" width="230" valign="top">
-      <br>
-      <h3>PRO+ EDITION</h3>
-      <p><b>Rp62.500 (1 ACRON)</b></p>
-      <img src="https://img.shields.io/badge/Tier-PRO+-blue?style=for-the-badge" alt="Pro+ Badge">
-      <br><br>
-      <ul align="left">
-        <li>✅ <b>GPU Gaming Optimization</b></li>
-        <li>✅ <b>Gaming Emulators</b></li>
-        <li>✅ <b>10+ Premium Themes</b></li>
-        <li>✅ <b>Performance Tweaks</b></li>
-        <li>✅ <b>Extra Configurations</b></li>
-      </ul>
-      <br>
-      <a href="https://trakteer.id/aleocrophic/tip?quantity=1">
-        <img src="https://img.shields.io/badge/BELI_SEKARANG-PRO+-0070f3?style=for-the-badge" alt="Beli Pro+">
-      </a>
-      <br><br>
-    </td>
-    <td align="center" width="230" valign="top">
-      <br>
-      <h3>ULTIMATE EDITION</h3>
-      <p><b>Rp125.000 (2 ACRON)</b></p>
-      <img src="https://img.shields.io/badge/Value-BEST_VALUE-gold?style=for-the-badge" alt="Best Value">
-      <br><br>
-      <ul align="left">
-        <li>🔥 <b>SEMUA FITUR PRO+ PLUS:</b></li>
-        <li>🛡️ <b>Penetration Testing Suite</b></li>
-        <li>💻 <b>Metasploit Framework</b></li>
-        <li>🔒 <b>Privacy Tools</b></li>
-        <li>👨‍💻 <b>Developer Pro Pack</b></li>
-        <li>🔄 <b>Lifetime Updates</b></li>
-        <li>⚡ <b>VIP Support</b></li>
-      </ul>
-      <br>
-      <a href="https://trakteer.id/aleocrophic/tip?quantity=2">
-        <img src="https://img.shields.io/badge/BELI_SEKARANG-ULTIMATE-FFD700?style=for-the-badge&logoColor=black" alt="Beli Ultimate">
-      </a>
-      <br><br>
-    </td>
-  </tr>
-</table>
-
-<br>
-
-<h2 id="paket-premium" align="center">🌟 Detail Paket Premium</h2>
-
-<div align="center">
-  <table>
-    <thead>
-      <tr>
-        <th>Fitur</th>
-        <th>PRO tanpa Plus</th>
-        <th>PRO+ (1 ACRON)</th>
-        <th>Ultimate (2 ACRON)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Akses Software 1000+</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>✅</td>
-      </tr>
-      <tr>
-        <td>GPU Optimization</td>
-        <td>❌</td>
-        <td>✅</td>
-        <td>✅</td>
-      </tr>
-      <tr>
-        <td>24/7 Keep-Alive</td>
-        <td>❌</td>
-        <td>✅</td>
-        <td>✅</td>
-      </tr>
-      <tr>
-        <td>Custom Branding</td>
-        <td>❌</td>
-        <td>❌</td>
-        <td>✅</td>
-      </tr>
-      <tr>
-        <td>Priority Repo Access</td>
-        <td>❌</td>
-        <td>❌</td>
-        <td>✅</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<br>
-
-<h2 id="faq" align="center">❓ Pertanyaan Umum (FAQ)</h2>
-
-<details>
-  <summary><b>Bagaimana cara mendapatkan license key setelah membayar?</b></summary>
-  <p>Setelah pembayaran berhasil diverifikasi oleh sistem, Anda dapat mengunjungi portal klaim dan memasukkan email yang Anda gunakan saat bertransaksi di Trakteer. License key akan muncul secara otomatis.</p>
-</details>
-
-<details>
-  <summary><b>Berapa lama masa berlaku lisensi?</b></summary>
-  <p>Lisensi bersifat permanen untuk versi mayor yang dibeli, termasuk update minor dalam versi tersebut.</p>
-</details>
-
-<details>
-  <summary><b>Apakah bisa upgrade dari PRO+ ke Ultimate?</b></summary>
-  <p>Ya, Anda cukup melakukan penambahan unit (ACRON) sesuai selisih harga dan menghubungi tim support untuk migrasi data.</p>
-</details>
-
-<br>
-
-<h2 align="center">💬 Apa Kata Mereka?</h2>
-
-<div align="center">
-  <i>"Sistem aktivasinya sangat cepat! Begitu bayar langsung bisa klaim key."</i> — <b>Andi R.</b><br>
-  <i>"Ultimate edition benar-benar worth it untuk pengerjaan desain berat di Termux."</i> — <b>Budi S.</b>
-</div>
-
-<br>
+Official payment gateway website for ACRO PRO+ and ULTIMATE premium editions. This is a Next.js application integrated with Trakteer for payment processing.
 
 ---
 
-<h2 id="setup-guide" align="center">🛠️ Setup & Configuration Guide</h2>
+## Deployment
 
-### 📋 Prerequisites
-Sebelum memulai, pastikan server Anda memenuhi persyaratan berikut:
-- **PHP 8.1+** dengan ekstensi: `json`, `pdo`, `pdo_sqlite`, `curl`.
-- **Web Server** (Nginx/Apache) atau **Vercel** (direkomendasikan).
-- **SQLite** (default) atau **PostgreSQL** untuk database.
+### Vercel (Recommended)
 
-### ⚙️ Environment Variables
-Konfigurasikan variabel lingkungan berikut (di `.env` atau Dashboard Vercel):
-
-| Variable | Description | Example |
-| :--- | :--- | :--- |
-| `TRAKTEER_TOKEN` | Token webhook dari dashboard Trakteer | `trhook-xxxxx...` |
-| `DB_CONNECTION` | Driver database (sqlite/pgsql) | `sqlite` |
-| `DB_DATABASE` | Nama database atau path file sqlite | `database.sqlite` |
-| `ADMIN_PASSWORD` | Password untuk dashboard admin | `securepassword` |
-
-### 🚀 Quick Start
-1. **Clone Repository:**
-   ```bash
-   git clone https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO.git
-   cd Aleocrophic_ACRO
-   ```
-2. **Configure Config:**
-   Edit file `api/premium/config.php` dan masukkan token Trakteer Anda.
-3. **Deploy:**
-   - **Vercel:** Jalankan `vercel` di root direktori.
-   - **Local:** Pastikan direktori `api/premium/` memiliki izin tulis untuk SQLite.
-
-### 🔌 Webhook Setup (Trakteer)
-1. Masuk ke Dashboard Trakteer -> Integrasi -> Webhook.
-2. Masukkan URL: `https://domain-anda.com/api/premium/webhook.php`.
-3. Pilih metode **POST**.
-4. Salin **Webhook Token** ke konfigurasi Anda.
+1. Import this repository to Vercel
+2. Add environment variables:
+   - `TRAKTEER_WEBHOOK_SECRET`: Your Trakteer webhook secret
+   - `LICENSE_SECRET`: Your license encryption secret
+   - `NEXT_PUBLIC_BASE_URL`: Your production domain
+3. Deploy
 
 ---
 
-<h2 id="troubleshooting" align="center">🔍 Troubleshooting</h2>
+## Environment Variables
 
-| Masalah | Solusi |
-| :--- | :--- |
-| **Error 403 Forbidden** | Pastikan `TRAKTEER_TOKEN` sudah benar dan domain Anda tidak memblokir user-agent Trakteer. Periksa juga apakah email supporter terkirim di payload. |
-| **Gagal Generate Lisensi** | Periksa izin tulis (write permission) pada folder `api/premium/` jika menggunakan SQLite. Pastikan database sudah terinisialisasi. |
-| **Cek Status Selalu Gagal** | Pastikan Order ID yang dimasukkan sesuai dengan yang ada di email notifikasi Trakteer (format: `TRK-XXXXX`). |
-| **Webhook Tidak Masuk** | Verifikasi URL di dashboard Trakteer dan pastikan SSL (HTTPS) sudah aktif dan valid. |
-
----
-
-<h2 id="kontak" align="center">📧 Kontak & Dukungan</h2>
-
-<div align="center">
-  <p>Butuh bantuan? Tim kami siap melayani Anda.</p>
-  <a href="https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO/issues">
-    <img src="https://img.shields.io/badge/Report-Issues-red?style=for-the-badge&logo=github" alt="Issues">
-  </a>
-  <a href="https://github.com/ZetaGo-Aurum/modded-ubuntu">
-    <img src="https://img.shields.io/badge/Main_Repo-Modded_Ubuntu-blueviolet?style=for-the-badge&logo=github" alt="Main Repo">
-  </a>
-</div>
+| Variable | Description |
+|----------|-------------|
+| `TRAKTEER_WEBHOOK_SECRET` | Trakteer webhook verification |
+| `LICENSE_SECRET` | AES encryption key for licenses |
+| `NEXT_PUBLIC_BASE_URL` | Production URL (e.g., https://acro.aleocrophic.com) |
 
 ---
 
-<div align="center">
-  <h3>⚖️ Kepemilikan & Lisensi</h3>
-  <p>Seluruh kode sumber dan infrastruktur adalah milik eksklusif <b>Aleocrophic Team</b>.<br>
-  Proyek ini bersifat <b>Proprietary</b>. Penggunaan tanpa izin dilarang keras.<br>
-  © 2026 Aleocrophic Team. All rights reserved.</p>
-  
-  <br>
-  
-  <p>
-    <a href="#"><img src="https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white" alt="FB"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="IG"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  </p>
-</div>
+## API Endpoints
 
-<!-- Floating CTA Simulation -->
-<div align="right">
-  <a href="#produk-harga">
-    <img src="https://img.shields.io/badge/TOP-↑-grey?style=flat-square" alt="Back to Top">
-  </a>
-</div>
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/webhook/trakteer` | POST | Trakteer payment webhook |
+| `/api/license` | POST | License key verification |
+
+---
+
+## Pricing
+
+| Edition | Price | ACRON |
+|---------|-------|-------|
+| PRO | FREE | - |
+| PRO+ | Rp 62,500 | 1 |
+| ULTIMATE | Rp 125,000 | 2 |
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 15
+- **Styling**: Tailwind CSS + Custom CSS
+- **Design**: Material You
+- **Payment**: Trakteer Integration
+- **Deployment**: Vercel
+
+---
+
+## License
+
+**PROPRIETARY LICENSE**
+
+This software is proprietary and confidential. Unauthorized copying, modification, distribution, or use of this software is strictly prohibited.
+
+All rights reserved by ZetaGo-Aurum under the ALEOCROPHIC brand.
+
+---
+
+## Contact
+
+- **Website**: [aleocrophic.com](https://aleocrophic.com)
+- **Email**: support@aleocrophic.com
+- **Trakteer**: [trakteer.id/Aleocrophic](https://trakteer.id/Aleocrophic)

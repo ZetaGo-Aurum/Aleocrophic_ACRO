@@ -1,25 +1,13 @@
 {
-  "functions": {
-    "api/premium/*.php": {
-      "runtime": "vercel-php@0.7.4"
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/webhook",
-      "destination": "/api/premium/webhook.php"
-    },
-    {
-      "source": "/check-status",
-      "destination": "/api/premium/check-status.php"
-    },
-    {
-      "source": "/premium/webhook",
-      "destination": "/api/premium/webhook.php"
-    },
-    {
-      "source": "/premium/check-status",
-      "destination": "/api/premium/check-status.php"
-    }
-  ]
+  ],
+  "env": {
+    "TRAKTEER_WEBHOOK_SECRET": "@trakteer-webhook-secret",
+    "LICENSE_SECRET": "@license-secret"
+  }
 }

@@ -1,13 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Ensure that the build process doesn't fail due to PHP files in the root or other non-Next.js files
-  eslint: {
-    ignoreDuringBuilds: true,
+  images: {
+    domains: ['raw.githubusercontent.com'],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

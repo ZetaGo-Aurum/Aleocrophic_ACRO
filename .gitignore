@@ -1,24 +1,34 @@
+# ACRO Gateway
+
+Dependencies:
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+
 # Next.js
 .next/
 out/
-build/
 
-# Dependencies
-node_modules/
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Vercel & Netlify
+# Vercel
 .vercel
-.netlify
 
-# IDEs
-.vscode/
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
 .idea/
+.vscode/
+*.sublime-*
 
-# OS files
-Thumbs.db
+# OS
 .DS_Store
+Thumbs.db

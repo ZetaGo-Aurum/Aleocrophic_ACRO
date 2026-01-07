@@ -1,27 +1,29 @@
 {
-  "name": "aleocrophic-payments",
+  "name": "acro-gateway",
   "version": "1.0.0",
-  "description": "Payment processing system with Trakteer integration",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test:config": "node scripts/validate-config.js"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "next": "14.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "next": "^15.1.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "crypto-js": "^4.2.0",
+    "uuid": "^9.0.1"
   },
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ZetaGo-Aurum/Aleocrophic_ACRO.git"
-  },
-  "author": "Aleocrophic",
-  "license": "Proprietary"
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/crypto-js": "^4.2.1",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0"
+  }
 }
