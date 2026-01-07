@@ -609,9 +609,9 @@ export default function Home() {
 
       {/* === STORE TAB === */}
       {activeTab === 'store' && (
-      <section id="products" className="min-h-screen py-20 bg-gray-900 relative">
-         <div className="container mx-auto px-6 relative z-10">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text" data-aos="fade-up">
+      <section id="products" className="min-h-screen bg-gray-900 relative" style={{ paddingTop: showBroadcast ? '128px' : '88px' }}>
+         <div className="container mx-auto px-6 relative z-10 py-12">
+            <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">
                Official Store
             </h2>
             
