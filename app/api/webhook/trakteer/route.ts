@@ -137,6 +137,15 @@ export async function POST(request: NextRequest) {
     // Update the user document
     await usersRef.doc(userId).update(updateData);
     
+    // Also save license to licenses collection if generated
+    if (license) {
+      await db.collection('licenses').doc(license.key).set({
+        ...license,
+        userId: userId,
+        userEmail: supporterEmail
+      });
+    }
+    
     console.log(`✓ Updated user ${userId}: balance ${userData.acronBalance || 0} → ${newBalance}`);
     if (license) {
       console.log(`✓ Generated license: ${license.key} (${license.tierName})`);

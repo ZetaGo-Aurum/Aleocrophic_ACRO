@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decryptLicenseData, LicenseType } from '@/lib/license';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
-// In production, use a database to store licenses
-// This is a simple in-memory store for demonstration
-const validLicensePatterns = {
-  proplus: /^ACRO-PP-[A-Z0-9]{8}-[A-Z0-9]{4}$/,
-  ultimate: /^ACRO-ULT-[A-Z0-9]{8}-[A-Z0-9]{4}$/
-};
+// Initialize Firebase Admin (reuse logic)
+let adminApp: App;
+
+function getAdminApp() {
+  if (getApps().length === 0) {
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+      : null;
+    
+    if (serviceAccount) {
+      adminApp = initializeApp({
+        credential: cert(serviceAccount),
+        projectId: 'server-media-75fdc'
+      });
+    } else {
+      adminApp = initializeApp({
+        projectId: 'server-media-75fdc'
+      });
+    }
+  }
+  return getApps()[0];
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,48 +36,56 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Determine license type from key format
-    let licenseType: LicenseType | null = null;
+    console.log(`Verifying license: ${licenseKey}`);
     
-    if (validLicensePatterns.proplus.test(licenseKey)) {
-      licenseType = 'proplus';
-    } else if (validLicensePatterns.ultimate.test(licenseKey)) {
-      licenseType = 'ultimate';
-    }
+    // Initialize Firebase Admin
+    const app = getAdminApp();
+    const db = getFirestore(app);
     
-    if (!licenseType) {
+    // Check license in "licenses" collection
+    const licenseDoc = await db.collection('licenses').doc(licenseKey).get();
+    
+    if (!licenseDoc.exists) {
+      console.log(`License not found: ${licenseKey}`);
       return NextResponse.json({
         valid: false,
-        error: 'Invalid license key format'
-      }, { status: 400 });
+        error: 'Invalid license key'
+      }, { status: 404 });
     }
     
-    // In production, verify against database
-    // For now, we validate format only
-    // TODO: Add database lookup
+    const licenseData = licenseDoc.data();
+    
+    if (!licenseData?.isActive) {
+      return NextResponse.json({
+        valid: false,
+        error: 'License is inactive or revoked'
+      }, { status: 403 });
+    }
+    
+    console.log(`✓ License valid: ${licenseKey} (${licenseData.tier})`);
     
     return NextResponse.json({
       valid: true,
-      licenseType,
-      tierName: licenseType === 'proplus' ? 'ACRO PRO+ Edition' : 'ACRO ULTIMATE Edition',
+      licenseType: licenseData.tier,
+      tierName: licenseData.tierName,
+      createdAt: licenseData.createdAt,
       message: 'License key is valid!'
     });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('License verification error:', error);
     return NextResponse.json({
       valid: false,
-      error: 'Failed to verify license'
+      error: 'Failed to verify license',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 });
   }
 }
 
 export async function GET() {
   return NextResponse.json({
-    endpoint: '/api/license',
-    methods: ['POST'],
-    usage: {
-      POST: 'Send { licenseKey: "ACRO-XX-XXXXXXXX-XXXX" } to verify a license'
-    }
+    message: 'ACRO License Validation API',
+    method: 'POST',
+    body: { licenseKey: 'ACRO-XX-...' }
   });
 }

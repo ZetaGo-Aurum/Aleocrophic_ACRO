@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User Profile Rules
+    match /users/{userId} {
+      // User can read their own profile
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // User can create their own profile on signup
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // User can ONLY update specific fields (display name, photo)
+      // PREVENTS user from hacking their own balance or licenses
+      allow update: if request.auth != null && request.auth.uid == userId
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['displayName', 'photoURL', 'email', 'updatedAt']);
+    }
+    
+    // License Collection Rules
+    match /licenses/{licenseKey} {
+      // Only readable/writable by Server Admin SDK (which bypasses rules)
+      // Public users cannot query this directly
+      allow read, write: if false;
+    }
+  }
+}

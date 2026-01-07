@@ -78,6 +78,14 @@ export async function POST(request: NextRequest) {
         lastPurchase: new Date().toISOString()
       });
 
+      // Also create a standalone license document for easy validation
+      const licenseRef = db.collection('licenses').doc(licenseKey);
+      t.set(licenseRef, {
+        ...newLicense,
+        userId: uid,
+        userEmail: userData?.email || 'unknown'
+      });
+
       return { newBalance, license: newLicense };
     });
 
@@ -90,9 +98,19 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Purchase error:', error);
+    
+    // Determine status code based on error
+    let status = 500;
+    if (error.message === 'User not found' || error.message === 'Missing required fields') {
+      status = 404;
+    } else if (error.message === 'Insufficient balance') {
+      status = 400; // Client side should handle this
+    }
+
     return NextResponse.json({
       success: false,
-      error: error.message || 'Transaction failed'
-    }, { status: 400 }); // Return 400 for logic errors (like insufficient balance)
+      error: error.message || 'Transaction failed',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { status });
   }
 }
