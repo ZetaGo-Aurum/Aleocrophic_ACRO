@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import Toast from '@/components/Toast';
 
 export default function ProfilePage() {
-  const { user, userData, loading, logout, updateUserName, refreshUserData } = useAuth();
+  const { user, userData, loading, logout, updateUserName, updateUserPhoto, refreshUserData } = useAuth();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newName, setNewName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,10 +27,14 @@ export default function ProfilePage() {
     }
   }, [userData]);
 
+  const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
+    setToast({ message, type });
+  };
+
   if (loading) {
     return (
-      <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="gradient-text" style={{ fontSize: '24px' }}>Loading...</div>
+      <main className="loading-screen">
+        <div className="gradient-text loading-text">Loading...</div>
       </main>
     );
   }
@@ -39,6 +47,7 @@ export default function ProfilePage() {
     if (newName.trim() && newName !== userData.displayName) {
       await updateUserName(newName.trim());
       setIsEditing(false);
+      showToast('✓ Name updated successfully!', 'success');
     }
   };
 
@@ -47,85 +56,129 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select an image file', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image must be less than 5MB', 'error');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      // Convert to base64 for storage (simplified - in production use Firebase Storage)
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        await updateUserPhoto(base64);
+        showToast('✓ Profile photo updated!', 'success');
+        setUploadingPhoto(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      showToast('Failed to upload photo', 'error');
+      setUploadingPhoto(false);
+    }
+  };
+
   const copyLicenseKey = (key: string) => {
     navigator.clipboard.writeText(key);
     setCopied(key);
+    showToast('✓ License key copied!', 'success');
     setTimeout(() => setCopied(null), 2000);
   };
 
   const handleTopUp = () => {
     if (userData.isAnonymous) {
-      alert('Guest accounts cannot top-up. Please sign in with email or Google.');
+      showToast('Guest accounts cannot top-up. Please sign in with email or Google.', 'warning');
       return;
     }
     window.open('https://trakteer.id/Aleocrophic/tip', '_blank');
   };
 
   return (
-    <main style={{ minHeight: '100vh', padding: '100px 24px 60px' }}>
+    <main className="profile-page">
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handlePhotoChange}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
+
       {/* Back Button */}
-      <div style={{ maxWidth: '800px', margin: '0 auto 24px' }}>
-        <a href="/" style={{ color: '#9c4dcc', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="profile-header-nav">
+        <a href="/" className="back-link">
           ← Back to Home
         </a>
       </div>
 
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="profile-container">
         {/* Profile Header */}
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            {/* Avatar */}
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #9c4dcc, #6a1b9a)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '32px',
-              fontWeight: 700,
-              color: 'white'
-            }}>
-              {userData.displayName?.charAt(0).toUpperCase() || '?'}
+        <div className="profile-card profile-header-card">
+          <div className="profile-header">
+            {/* Avatar with upload */}
+            <div 
+              className={`profile-avatar-large ${uploadingPhoto ? 'uploading' : ''}`}
+              onClick={handlePhotoClick}
+              title="Click to change photo"
+            >
+              {userData.photoURL ? (
+                <img src={userData.photoURL} alt="Profile" />
+              ) : (
+                <span>{userData.displayName?.charAt(0).toUpperCase() || '?'}</span>
+              )}
+              <div className="avatar-overlay">
+                <span>📷</span>
+              </div>
             </div>
 
-            <div style={{ flex: 1 }}>
+            <div className="profile-info">
               {isEditing ? (
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div className="name-edit-form">
                   <input
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      background: 'rgba(0,0,0,0.3)',
-                      color: 'white',
-                      fontSize: '16px'
-                    }}
+                    className="name-input"
+                    placeholder="Your name"
                   />
-                  <button onClick={handleUpdateName} className="btn btn-primary" style={{ padding: '10px 16px' }}>
-                    Save
-                  </button>
-                  <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
-                    Cancel
-                  </button>
+                  <div className="name-edit-actions">
+                    <button onClick={handleUpdateName} className="btn btn-primary btn-sm">
+                      Save
+                    </button>
+                    <button onClick={() => setIsEditing(false)} className="btn btn-ghost btn-sm">
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
-                  <h1 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '4px' }}>
+                  <h1 className="profile-name">
                     {userData.displayName}
-                    {userData.isAnonymous && <span style={{ fontSize: '14px', opacity: 0.6, marginLeft: '8px' }}>(Guest)</span>}
+                    {userData.isAnonymous && <span className="guest-badge">(Guest)</span>}
                   </h1>
-                  <p style={{ opacity: 0.6 }}>{userData.email || 'Anonymous User'}</p>
+                  <p className="profile-email">{userData.email || 'Anonymous User'}</p>
                 </>
               )}
             </div>
 
             {!isEditing && (
-              <button onClick={() => setIsEditing(true)} className="btn btn-outline" style={{ padding: '10px 16px' }}>
+              <button onClick={() => setIsEditing(true)} className="btn btn-outline btn-sm">
                 ✏️ Edit Name
               </button>
             )}
@@ -133,13 +186,13 @@ export default function ProfilePage() {
         </div>
 
         {/* ACRON Balance */}
-        <div className="card card-glow-gold" style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <p style={{ opacity: 0.6, marginBottom: '8px' }}>ACRON Balance</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="acron-coin" style={{ width: '48px', height: '48px', fontSize: '20px' }}>A</div>
-                <span style={{ fontSize: '42px', fontWeight: 800 }} className="gradient-text">
+        <div className="profile-card balance-card">
+          <div className="balance-content">
+            <div className="balance-info">
+              <p className="balance-label">ACRON Balance</p>
+              <div className="balance-display">
+                <div className="acron-coin-large">A</div>
+                <span className="balance-amount gradient-text">
                   {userData.acronBalance}
                 </span>
               </div>
@@ -148,80 +201,47 @@ export default function ProfilePage() {
               onClick={handleTopUp}
               className="btn btn-gold"
               disabled={userData.isAnonymous}
-              style={{ opacity: userData.isAnonymous ? 0.5 : 1 }}
             >
               💳 Top Up ACRON
             </button>
           </div>
           {userData.isAnonymous && (
-            <p style={{ marginTop: '12px', fontSize: '13px', opacity: 0.7, color: '#ffd54f' }}>
+            <p className="balance-warning">
               ⚠️ Guest accounts cannot top-up. Sign in with email or Google to unlock.
             </p>
           )}
         </div>
 
         {/* Licenses */}
-        <div className="card" style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '20px' }}>🔑 Your Licenses</h2>
+        <div className="profile-card">
+          <h2 className="card-title">🔑 Your Licenses</h2>
           
           {userData.licenses.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px', opacity: 0.6 }}>
-              <p style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</p>
+            <div className="empty-licenses">
+              <span className="empty-icon">🔒</span>
               <p>No licenses yet</p>
-              <p style={{ fontSize: '14px', marginTop: '8px' }}>Purchase PRO+ or ULTIMATE to get a license key</p>
+              <p className="empty-hint">Purchase PRO+ or ULTIMATE to get a license key</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="licenses-list">
               {userData.licenses.map((license, i) => (
                 <div
                   key={i}
-                  style={{
-                    padding: '16px 20px',
-                    borderRadius: '16px',
-                    background: license.tier === 'ultimate' 
-                      ? 'linear-gradient(135deg, rgba(255,213,79,0.1), rgba(200,164,21,0.1))'
-                      : 'linear-gradient(135deg, rgba(156,77,204,0.1), rgba(106,27,154,0.1))',
-                    border: `1px solid ${license.tier === 'ultimate' ? 'rgba(255,213,79,0.3)' : 'rgba(156,77,204,0.3)'}`
-                  }}
+                  className={`license-item ${license.tier}`}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{
-                      padding: '4px 12px',
-                      borderRadius: '100px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      background: license.tier === 'ultimate' ? 'var(--gradient-gold)' : 'var(--gradient-purple)',
-                      color: license.tier === 'ultimate' ? '#1a1a2e' : 'white'
-                    }}>
+                  <div className="license-header">
+                    <span className={`license-badge ${license.tier}`}>
                       {license.tierName}
                     </span>
-                    <span style={{ fontSize: '12px', opacity: 0.6 }}>
+                    <span className="license-date">
                       {new Date(license.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <code style={{
-                      flex: 1,
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      background: 'rgba(0,0,0,0.3)',
-                      fontSize: '14px',
-                      fontFamily: 'monospace',
-                      letterSpacing: '1px'
-                    }}>
-                      {license.key}
-                    </code>
+                  <div className="license-key-row">
+                    <code className="license-key">{license.key}</code>
                     <button
                       onClick={() => copyLicenseKey(license.key)}
-                      style={{
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        background: copied === license.key ? '#4caf50' : 'rgba(255,255,255,0.1)',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                      }}
+                      className={`copy-btn ${copied === license.key ? 'copied' : ''}`}
                     >
                       {copied === license.key ? '✓ Copied' : '📋 Copy'}
                     </button>
@@ -233,8 +253,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-          <button onClick={handleLogout} className="btn btn-outline" style={{ color: '#f44336', borderColor: '#f44336' }}>
+        <div className="profile-actions">
+          <button onClick={handleLogout} className="btn btn-danger">
             🚪 Log Out
           </button>
         </div>

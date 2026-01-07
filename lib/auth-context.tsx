@@ -43,6 +43,7 @@ interface AuthContextType {
   signInAnon: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserName: (name: string) => Promise<void>;
+  updateUserPhoto: (photoURL: string) => Promise<void>;
   refreshUserData: () => Promise<void>;
 }
 
@@ -122,6 +123,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refreshUserData();
   };
 
+  const updateUserPhoto = async (photoURL: string) => {
+    if (!user) return;
+    await updateProfile(user, { photoURL: photoURL });
+    await updateDoc(doc(db, 'users', user.uid), { photoURL: photoURL });
+    await refreshUserData();
+  };
+
   const refreshUserData = async () => {
     if (user) {
       await fetchUserData(user.uid);
@@ -139,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInAnon,
       logout,
       updateUserName,
+      updateUserPhoto,
       refreshUserData
     }}>
       {children}

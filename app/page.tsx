@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import AuthModal from '@/components/AuthModal';
+import Toast from '@/components/Toast';
 
 export default function Home() {
   const { user, userData, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
   const screenshots = [
     { src: '/screenshots/screenshot_blender.jpg', alt: 'Blender 3D Modeling', caption: 'Blender 4.3.2 - 3D Modeling & Animation' },
@@ -17,57 +19,78 @@ export default function Home() {
     { src: '/screenshots/screenshot_krita_splash.jpg', alt: 'Krita Splash', caption: 'Krita 25th Anniversary Edition' },
   ];
 
+  const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const handleBuyClick = (tier: 'proplus' | 'ultimate') => {
     if (!user) {
       setShowAuthModal(true);
       return;
     }
     if (userData?.isAnonymous) {
-      alert('Guest accounts cannot purchase. Please sign in with email or Google.');
+      showToast('Guest accounts cannot purchase. Please sign in with email or Google.', 'warning');
       return;
     }
-    const quantity = tier === 'proplus' ? 1 : 2;
-    window.open(`https://trakteer.id/Aleocrophic/tip?quantity=${quantity}`, '_blank');
+
+    const requiredAcron = tier === 'proplus' ? 1 : 2;
+    const tierName = tier === 'proplus' ? 'PRO+' : 'ULTIMATE';
+    
+    // Check if user has enough balance
+    if ((userData?.acronBalance || 0) >= requiredAcron) {
+      // TODO: Process purchase with balance
+      showToast(`🎉 Purchasing ${tierName} with ${requiredAcron} ACRON...`, 'success');
+      // In real implementation: call API to deduct balance and generate license
+    } else {
+      // Not enough balance - redirect to Trakteer
+      showToast(`❌ ACRON tidak cukup! Perlu ${requiredAcron} ACRON untuk ${tierName}`, 'error');
+      setTimeout(() => {
+        window.open(`https://trakteer.id/Aleocrophic/tip?quantity=${requiredAcron}`, '_blank');
+      }, 1500);
+    }
   };
 
   return (
     <main>
+      {/* Toast Notification */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
       {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
 
       {/* Navigation */}
       <nav className="nav-glass">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/acron.png" alt="ACRON" style={{ width: '32px', height: '32px' }} />
-          <span style={{ fontSize: '22px', fontWeight: 800 }} className="gradient-text">ACRO</span>
+        <div className="nav-brand">
+          <img src="/acron.png" alt="ACRON" className="nav-logo" />
+          <span className="nav-title gradient-text">ACRO</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        
+        <div className="nav-menu">
           <a href="#pricing" className="nav-link">Pricing</a>
           <a href="#gallery" className="nav-link">Gallery</a>
           
           {loading ? (
-            <div style={{ width: '100px' }} />
+            <div className="nav-skeleton" />
           ) : user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="nav-user">
               {/* Balance */}
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '100px',
-                background: 'rgba(255,213,79,0.1)',
-                border: '1px solid rgba(255,213,79,0.3)'
-              }}>
-                <span style={{ fontSize: '14px' }}>🪙</span>
-                <span style={{ fontWeight: 600, color: '#ffd54f' }}>{userData?.acronBalance || 0}</span>
+              <div className="nav-balance">
+                <span className="balance-icon">🪙</span>
+                <span className="balance-value">{userData?.acronBalance || 0}</span>
               </div>
-              <a href="/profile" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '14px' }}>
-                👤 Profile
+              
+              {/* Profile Avatar */}
+              <a href="/profile" className="nav-avatar">
+                {userData?.photoURL ? (
+                  <img src={userData.photoURL} alt="Profile" />
+                ) : (
+                  <span>{userData?.displayName?.charAt(0).toUpperCase() || '?'}</span>
+                )}
               </a>
             </div>
           ) : (
-            <button onClick={() => setShowAuthModal(true)} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '14px' }}>
+            <button onClick={() => setShowAuthModal(true)} className="btn btn-primary btn-sm">
               Sign In
             </button>
           )}
@@ -79,18 +102,10 @@ export default function Home() {
         <div className="hero-bg-effect" />
         <div className="hero-glow" />
         
-        <div style={{ position: 'relative', zIndex: 1 }}>
+        <div className="hero-content">
           {/* ACRON Coin */}
-          <div className="animate-float" style={{ marginBottom: '32px' }}>
-            <img 
-              src="/acron.png" 
-              alt="ACRON Coin" 
-              style={{ 
-                width: '120px', 
-                height: '120px',
-                filter: 'drop-shadow(0 0 40px rgba(255, 213, 79, 0.5))'
-              }} 
-            />
+          <div className="hero-coin animate-float">
+            <img src="/acron.png" alt="ACRON Coin" />
           </div>
 
           <h1 className="hero-title">
@@ -118,24 +133,24 @@ export default function Home() {
           <div className="hero-stats">
             <div className="stat-item">
               <span className="stat-value">1000+</span>
-              <span className="stat-label">Apps</span>
+              <span className="stat-label">APPS</span>
             </div>
             <div className="stat-divider" />
             <div className="stat-item">
               <span className="stat-value">v3.5</span>
-              <span className="stat-label">Latest</span>
+              <span className="stat-label">LATEST</span>
             </div>
             <div className="stat-divider" />
             <div className="stat-item">
               <span className="stat-value">4.5</span>
-              <span className="stat-label">OpenGL</span>
+              <span className="stat-label">OPENGL</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="section" style={{ background: 'rgba(0,0,0,0.3)' }}>
+      <section className="section section-dark">
         <div className="container">
           <h2 className="section-title">Why Choose ACRO?</h2>
           <div className="features-grid">
@@ -170,7 +185,7 @@ export default function Home() {
                 <h3 className="tier-name">🆓 PRO</h3>
                 <p className="tier-desc">Open Source</p>
                 <div className="tier-price">
-                  <span className="price-value">FREE</span>
+                  <span className="price-value-free">FREE</span>
                 </div>
               </div>
               
@@ -191,8 +206,7 @@ export default function Home() {
               <a 
                 href="https://github.com/ZetaGo-Aurum/modded-ubuntu" 
                 target="_blank"
-                className="btn btn-outline"
-                style={{ width: '100%' }}
+                className="btn btn-outline btn-block"
               >
                 📥 Install from GitHub
               </a>
@@ -210,7 +224,7 @@ export default function Home() {
                   <span className="price-value">62.500</span>
                 </div>
                 <div className="acron-display">
-                  <img src="/acron.png" alt="ACRON" style={{ width: '28px', height: '28px' }} />
+                  <img src="/acron.png" alt="ACRON" />
                   <span>= 1 ACRON</span>
                 </div>
               </div>
@@ -231,8 +245,7 @@ export default function Home() {
               
               <button 
                 onClick={() => handleBuyClick('proplus')}
-                className="btn btn-primary"
-                style={{ width: '100%' }}
+                className="btn btn-primary btn-block"
               >
                 🛒 Buy with 1 ACRON
               </button>
@@ -250,8 +263,8 @@ export default function Home() {
                   <span className="price-value">125.000</span>
                 </div>
                 <div className="acron-display">
-                  <img src="/acron.png" alt="ACRON" style={{ width: '28px', height: '28px' }} />
-                  <img src="/acron.png" alt="ACRON" style={{ width: '28px', height: '28px' }} />
+                  <img src="/acron.png" alt="ACRON" />
+                  <img src="/acron.png" alt="ACRON" />
                   <span>= 2 ACRON</span>
                 </div>
               </div>
@@ -273,8 +286,7 @@ export default function Home() {
               
               <button 
                 onClick={() => handleBuyClick('ultimate')}
-                className="btn btn-gold"
-                style={{ width: '100%' }}
+                className="btn btn-gold btn-block"
               >
                 🛒 Buy with 2 ACRON
               </button>
@@ -294,7 +306,7 @@ export default function Home() {
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="section" style={{ background: 'rgba(0,0,0,0.3)' }}>
+      <section id="gallery" className="section section-dark">
         <div className="container">
           <h2 className="section-title">📸 Gallery</h2>
           
@@ -331,35 +343,41 @@ export default function Home() {
           <h2 className="section-title">📖 Quick Start Guide</h2>
           
           <div className="guide-card">
-            <h3>Requirements</h3>
-            <ul className="feature-list">
-              <li>Termux from F-Droid</li>
-              <li>VNC Viewer (AVNC recommended)</li>
-              <li>15-20GB free storage</li>
-              <li>Stable internet connection</li>
-            </ul>
-            
-            <h3>Installation</h3>
-            <div className="code-block">
-              <code># Update Termux</code><br />
-              <code>yes | pkg up</code><br /><br />
-              <code># Clone and install</code><br />
-              <code>pkg install git wget -y</code><br />
-              <code>git clone --depth=1 https://github.com/ZetaGo-Aurum/modded-ubuntu.git</code><br />
-              <code>cd modded-ubuntu && bash setup.sh</code>
+            <div className="guide-section">
+              <h3>Requirements</h3>
+              <ul className="feature-list compact">
+                <li>Termux from F-Droid</li>
+                <li>VNC Viewer (AVNC recommended)</li>
+                <li>15-20GB free storage</li>
+                <li>Stable internet connection</li>
+              </ul>
             </div>
             
-            <h3>After Installation</h3>
-            <div className="code-block">
-              <code># Restart Termux, then:</code><br />
-              <code>ubuntu</code><br /><br />
-              <code># Create user (first time):</code><br />
-              <code>bash user.sh</code><br /><br />
-              <code># Install GUI:</code><br />
-              <code>sudo bash gui.sh</code>
+            <div className="guide-section">
+              <h3>Installation</h3>
+              <div className="code-block">
+                <code># Update Termux</code><br />
+                <code>yes | pkg up</code><br /><br />
+                <code># Clone and install</code><br />
+                <code>pkg install git wget -y</code><br />
+                <code>git clone --depth=1 https://github.com/ZetaGo-Aurum/modded-ubuntu.git</code><br />
+                <code>cd modded-ubuntu && bash setup.sh</code>
+              </div>
             </div>
             
-            <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <div className="guide-section">
+              <h3>After Installation</h3>
+              <div className="code-block">
+                <code># Restart Termux, then:</code><br />
+                <code>ubuntu</code><br /><br />
+                <code># Create user (first time):</code><br />
+                <code>bash user.sh</code><br /><br />
+                <code># Install GUI:</code><br />
+                <code>sudo bash gui.sh</code>
+              </div>
+            </div>
+            
+            <div className="guide-footer">
               <a 
                 href="https://github.com/ZetaGo-Aurum/modded-ubuntu" 
                 target="_blank"
@@ -375,11 +393,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-brand">
-          <img src="/acron.png" alt="ACRON" style={{ width: '48px', height: '48px', marginBottom: '12px' }} />
-          <div className="gradient-text" style={{ fontSize: '28px', fontWeight: 700 }}>
-            ACRO PRO Edition
-          </div>
-          <p>Premium Linux Distribution for Termux</p>
+          <img src="/acron.png" alt="ACRON" className="footer-logo" />
+          <div className="footer-title gradient-text">ACRO PRO Edition</div>
+          <p className="footer-tagline">Premium Linux Distribution for Termux</p>
         </div>
         
         <div className="footer-links">
