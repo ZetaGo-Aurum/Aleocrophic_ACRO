@@ -35,18 +35,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate Final Price Server-Side
+    // Calculate Final Price (ALWAYS BASE PRICE)
+    // Discount now only applies to the cash price on Trakteer, not the ACRON amount deducted.
     let basePrice = (tier === 'ultimate') ? Config.ultimate_price : Config.proplus_price;
     let finalPrice = basePrice;
-    let discountApplied = false;
+    
+    // NOTE: Previous discount logic removed as per request. 
+    // ACRON cost remains fixed (1 or 2). Discount is handled externally via Trakteer price adjustment.
 
-    if (Config.discount_active && Config.discount_tiers.includes(tier)) {
-      const discountAmount = basePrice * (Config.discount_percent / 100);
-      finalPrice = Math.max(0, basePrice - discountAmount); // Prevent negative price
-      discountApplied = true;
-    }
-
-    console.log(`Price Calculation: Base=${basePrice}, Discount=${discountApplied ? Config.discount_percent + '%' : 'None'}, Final=${finalPrice}`);
+    console.log(`[Transaction] Processing ${tier} for ${uid}. Cost: ${finalPrice} ACRON`);
 
     const userRef = db.collection('users').doc(uid);
 

@@ -11,6 +11,10 @@ type PricingConfig = {
   discount_active: boolean;
   discount_percent: number;
   discount_tiers: string[];
+  broadcast_active?: boolean;
+  broadcast_message?: string;
+  broadcast_duration?: number;
+  broadcast_permanent?: boolean;
 };
 
 type UserData = {
@@ -178,6 +182,20 @@ export default function AdminDashboard() {
                      className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-teal-500 outline-none"
                      placeholder="0"
                    />
+                   {/* Unit Price Calculation Display */}
+                   <div className="mt-2 text-xs text-gray-400 bg-gray-900 p-2 rounded border border-gray-700">
+                      <div className="flex justify-between">
+                         <span>Unit Price (Normal):</span>
+                         <span>Rp 62.500</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-teal-400">
+                         <span>Unit Price (Discounted):</span>
+                         <span>Rp {(62500 * ((100 - (config?.discount_percent || 0)) / 100)).toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="mt-1 pt-1 border-t border-gray-700 text-yellow-500">
+                         * User pays full ACRON, but buys ACRON cheaper at Trakteer.
+                      </div>
+                   </div>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Applicable Tiers</label>

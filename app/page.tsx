@@ -29,10 +29,11 @@ export default function Home() {
   const getPriceDetails = (tier: string, baseAcron: number, baseRp: number) => {
     if (pricingConfig?.discount_active && pricingConfig?.discount_tiers?.includes(tier)) {
         const percent = pricingConfig.discount_percent || 0;
-        const discountAcron = baseAcron * ((100 - percent) / 100);
+        // Discount affects RP price (Fiat), but ACRON quantity remains fixed.
+        // User buys ACRON cheaper at Trakteer, but pays full ACRON amount here.
         const discountRp = baseRp * ((100 - percent) / 100);
         return {
-            acron: Number(discountAcron.toFixed(2)),
+            acron: baseAcron, // Fixed (1 or 2)
             rp: discountRp.toLocaleString('id-ID'),
             originalRp: baseRp.toLocaleString('id-ID'),
             isDiscounted: true,
