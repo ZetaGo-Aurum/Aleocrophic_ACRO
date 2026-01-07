@@ -149,29 +149,33 @@ export default function BroadcastManager() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 md:p-12">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500 text-center md:text-left">
              📢 Broadcast Manager
           </h1>
-          <button 
-             onClick={() => { setCurrentBroadcast({ permanent: false }); setIsEditing(true); }}
-             className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-red-500 rounded hover:opacity-90 transition font-bold"
-          >
-             + New Broadcast
-          </button>
-          <div className="ml-4">
-             {permission === 'default' && (
-                <button onClick={requestPermission} className="bg-blue-600 px-3 py-2 rounded text-sm mr-2">Enable Notifications</button>
-             )}
-             <button 
-               onClick={() => {
-                 const sent = sendNotification('🔔 Test', 'This is a test notification!');
-                 if (!sent) alert('Failed to send notification. Please Enable Alerts or check your browser settings.');
-               }} 
-               className="bg-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-600 transition"
-             >
-                Test Notify
-             </button>
+          
+          <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+              <button 
+                 onClick={() => { setCurrentBroadcast({ permanent: false }); setIsEditing(true); }}
+                 className="w-full md:w-auto px-4 py-2 bg-gradient-to-r from-yellow-500 to-red-500 rounded hover:opacity-90 transition font-bold"
+              >
+                 + New Broadcast
+              </button>
+              
+              <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                 {permission === 'default' && (
+                    <button onClick={requestPermission} className="w-full md:w-auto bg-blue-600 px-3 py-2 rounded text-sm font-medium hover:bg-blue-500 transition">Enable Notifications</button>
+                 )}
+                 <button 
+                   onClick={() => {
+                     const sent = sendNotification('🔔 Test', 'This is a test notification!');
+                     if (!sent) alert('Failed to send notification. Please Enable Alerts or check your browser settings.');
+                   }} 
+                   className="w-full md:w-auto bg-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-600 transition font-medium"
+                 >
+                    Test Notify
+                 </button>
+              </div>
           </div>
         </div>
 
