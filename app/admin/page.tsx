@@ -127,8 +127,8 @@ export default function AdminDashboard() {
                <label className="block text-sm text-gray-400 mb-1">PRO+ Price</label>
                <input 
                  type="number" 
-                 value={config?.proplus_price} 
-                 onChange={(e) => setConfig(prev => prev ? {...prev, proplus_price: Number(e.target.value)} : null)}
+                 value={config?.proplus_price ?? 0} 
+                 onChange={(e) => setConfig(prev => prev ? {...prev, proplus_price: parseFloat(e.target.value) || 0} : null)}
                  className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-teal-500 outline-none"
                />
              </div>
@@ -136,8 +136,8 @@ export default function AdminDashboard() {
                <label className="block text-sm text-gray-400 mb-1">ULTIMATE Price</label>
                <input 
                  type="number" 
-                 value={config?.ultimate_price} 
-                 onChange={(e) => setConfig(prev => prev ? {...prev, ultimate_price: Number(e.target.value)} : null)}
+                 value={config?.ultimate_price ?? 0} 
+                 onChange={(e) => setConfig(prev => prev ? {...prev, ultimate_price: parseFloat(e.target.value) || 0} : null)}
                  className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-teal-500 outline-none"
                />
              </div>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                <label className="flex items-center space-x-2 cursor-pointer">
                  <input 
                    type="checkbox" 
-                   checked={config?.discount_active}
+                   checked={config?.discount_active ?? false}
                    onChange={(e) => setConfig(prev => prev ? {...prev, discount_active: e.target.checked} : null)}
                    className="form-checkbox h-5 w-5 text-teal-500 rounded bg-gray-900 border-gray-600"
                  />
@@ -164,11 +164,19 @@ export default function AdminDashboard() {
                 <div>
                    <label className="block text-sm text-gray-400 mb-1">Discount Percentage (%)</label>
                    <input 
-                     type="number" 
+                     type="text" 
                      max="100" min="0"
-                     value={config?.discount_percent}
-                     onChange={(e) => setConfig(prev => prev ? {...prev, discount_percent: Number(e.target.value)} : null)}
+                     value={config?.discount_percent?.toString() || ''}
+                     onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                             setConfig(prev => prev ? {...prev, discount_percent: 0} : null);
+                        } else if (/^\d+$/.test(val)) {
+                             setConfig(prev => prev ? {...prev, discount_percent: Number(val)} : null);
+                        }
+                     }}
                      className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-teal-500 outline-none"
+                     placeholder="0"
                    />
                 </div>
                 <div>
@@ -177,7 +185,7 @@ export default function AdminDashboard() {
                     <label className="flex items-center space-x-2">
                        <input 
                          type="checkbox"
-                         checked={config?.discount_tiers.includes('proplus')}
+                         checked={config?.discount_tiers.includes('proplus') ?? false}
                          onChange={(e) => {
                             if (!config) return;
                             const tiers = e.target.checked 
@@ -192,7 +200,7 @@ export default function AdminDashboard() {
                     <label className="flex items-center space-x-2">
                        <input 
                          type="checkbox"
-                         checked={config?.discount_tiers.includes('ultimate')}
+                         checked={config?.discount_tiers.includes('ultimate') ?? false}
                          onChange={(e) => {
                             if (!config) return;
                             const tiers = e.target.checked 
@@ -208,6 +216,79 @@ export default function AdminDashboard() {
                 </div>
              </div>
           </div>
+        </div>
+
+        {/* Broadcast Management */}
+        <div className="mt-8 pt-6 border-t border-gray-700">
+           <div className="flex justify-between items-center mb-4">
+               <h3 className="text-xl font-bold text-white flex items-center">
+                 <span className="bg-yellow-500 w-2 h-8 rounded mr-3"></span>
+                 Broadcast Advertisement
+               </h3>
+               <label className="flex items-center space-x-2 cursor-pointer">
+                 <input 
+                   type="checkbox" 
+                   checked={config?.broadcast_active ?? false}
+                   onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_active: e.target.checked} : null)}
+                   className="form-checkbox h-5 w-5 text-yellow-500 rounded bg-gray-900 border-gray-600"
+                 />
+                 <span className={config?.broadcast_active ? "text-yellow-400 font-bold" : "text-gray-500"}>
+                   {config?.broadcast_active ? 'ON AIR' : 'OFF'}
+                 </span>
+               </label>
+           </div>
+           
+           <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${config?.broadcast_active ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+              <div>
+                 <label className="block text-sm text-gray-400 mb-1">Message Content</label>
+                 <textarea
+                   value={config?.broadcast_message || ''}
+                   onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_message: e.target.value} : null)}
+                   className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none h-24 resize-none"
+                   placeholder="Enter your broadcast message here..."
+                 />
+              </div>
+              <div className="space-y-4">
+                 <div>
+                    <label className="block text-sm text-gray-400 mb-1">Duration</label>
+                    <div className="flex items-center space-x-4">
+                        <label className="flex items-center space-x-2">
+                            <input 
+                              type="radio"
+                              name="duration"
+                              checked={config?.broadcast_permanent === true}
+                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: true} : null)}
+                              className="text-yellow-500 bg-gray-900 border-gray-600"
+                            />
+                            <span>Permanent</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input 
+                              type="radio"
+                              name="duration"
+                              checked={config?.broadcast_permanent === false}
+                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: false} : null)}
+                              className="text-yellow-500 bg-gray-900 border-gray-600"
+                            />
+                            <span>Timed (Seconds)</span>
+                        </label>
+                    </div>
+                 </div>
+                 
+                 {!config?.broadcast_permanent && (
+                   <div>
+                      <input 
+                        type="number"
+                        min="1"
+                        value={config?.broadcast_duration || 10}
+                        onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_duration: parseInt(e.target.value) || 5} : null)}
+                        className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+                        placeholder="Seconds"
+                      />
+                   </div>
+                 )}
+              </div>
+           </div>
         </div>
 
         <div className="mt-8 flex justify-end">

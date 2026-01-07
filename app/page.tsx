@@ -51,6 +51,23 @@ export default function Home() {
   const proPrice = getPriceDetails('proplus', 1, 62500);
   const ultPrice = getPriceDetails('ultimate', 2, 125000);
 
+  // Broadcast Logic
+  const [showBroadcast, setShowBroadcast] = useState(false);
+
+  useEffect(() => {
+    if (pricingConfig?.broadcast_active && pricingConfig?.broadcast_message) {
+        setShowBroadcast(true);
+        if (!pricingConfig.broadcast_permanent && pricingConfig.broadcast_duration) {
+            const timer = setTimeout(() => {
+                setShowBroadcast(false);
+            }, pricingConfig.broadcast_duration * 1000);
+            return () => clearTimeout(timer);
+        }
+    } else {
+        setShowBroadcast(false);
+    }
+  }, [pricingConfig]);
+
   const screenshots = [
     { src: '/screenshots/screenshot_blender.jpg', alt: 'Blender 3D Modeling', caption: 'Blender 4.3.2 - 3D Modeling & Animation' },
     { src: '/screenshots/screenshot_krita.jpg', alt: 'Krita Digital Painting', caption: 'Krita - Digital Painting' },
@@ -130,6 +147,28 @@ export default function Home() {
 
   return (
     <main>
+      {/* Broadcast Banner */}
+      {showBroadcast && (
+         <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl">
+            <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+               <div className="flex items-center space-x-3">
+                  <span className="text-2xl animate-pulse">📢</span>
+                  <p className="font-bold text-sm md:text-base drop-shadow-md">
+                     {pricingConfig.broadcast_message}
+                  </p>
+               </div>
+               {!pricingConfig.broadcast_permanent && (
+                 <button 
+                   onClick={() => setShowBroadcast(false)}
+                   className="ml-4 text-white hover:text-gray-200 transition"
+                 >
+                   ✕
+                 </button>
+               )}
+            </div>
+         </div>
+      )}
+      
       {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
@@ -144,7 +183,7 @@ export default function Home() {
       />
 
       {/* Navigation */}
-      <nav className="nav-glass">
+      <nav className={`nav-glass ${showBroadcast ? 'mt-12' : ''} transition-all duration-300`}>
         <div className="nav-brand">
           <img src="/acron.png" alt="ACRON" className="nav-logo" />
           <span className="nav-title gradient-text">ACRO</span>
