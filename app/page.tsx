@@ -7,6 +7,7 @@ import InvoiceCard from '@/components/InvoiceCard';
 import Toast from '@/components/Toast';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, query, orderBy, updateDoc, addDoc, where } from 'firebase/firestore';
+import { useNotification } from '@/hooks/useNotification';
 
 export default function Home() {
   const { user, userData, loading, refreshUserData } = useAuth();
@@ -39,7 +40,10 @@ export default function Home() {
   }, []);
 
   // Fetch Broadcasts (Multi-broadcast support)
+  // Fetch Broadcasts (Multi-broadcast support)
   const [broadcasts, setBroadcasts] = useState<any[]>([]);
+  const { permission, requestPermission, sendNotification } = useNotification();
+
   useEffect(() => {
      const q = query(collection(db, 'broadcasts'), orderBy('created_at', 'desc'));
      const unsub = onSnapshot(q, col => {
@@ -47,10 +51,38 @@ export default function Home() {
         const active = col.docs
           .map(d => ({id: d.id, ...d.data()}))
           .filter((b: any) => b.permanent || !b.target_time || new Date(b.target_time) > now);
+        
         setBroadcasts(active);
+
+        // Check for new broadcasts
+        try {
+          const knownIds = JSON.parse(localStorage.getItem('knownBroadcasts') || '[]');
+          const newBroadcasts = active.filter((b: any) => !knownIds.includes(b.id));
+
+          if (newBroadcasts.length > 0) {
+             newBroadcasts.forEach((b: any) => {
+                // Only notify if there are known IDs (meaning subsequent visits) or if we want to notify on first load?
+                // User said "SERVICE NOTIFIKASI UNTUK BROADCAST DI CLIENT".
+                // Let's notify if it's new. Use a flag to avoid notification blast on very first load?
+                // Actually, logic: if NO knownIds, assumes first visit, maybe don't spam.
+                // But let's just do it. If knownIds exists, notify new. If empty, mark all as known without notifying.
+                if (knownIds.length > 0) {
+                   sendNotification('📢 New Broadcast!', b.message);
+                }
+             });
+             const updatedKnown = [...knownIds, ...newBroadcasts.map((b: any) => b.id)];
+             localStorage.setItem('knownBroadcasts', JSON.stringify(updatedKnown));
+          } else if (knownIds.length === 0 && active.length > 0) {
+             // First load initialization
+             const ids = active.map((b: any) => b.id);
+             localStorage.setItem('knownBroadcasts', JSON.stringify(ids));
+          }
+        } catch (e) {
+          console.error("Notification logic error", e);
+        }
      });
      return () => unsub();
-  }, []);
+  }, [sendNotification]);
 
   // Balance Minification Helper
   const formatBalance = (n: number): string => {
@@ -246,8 +278,17 @@ export default function Home() {
         className="nav-glass transition-all duration-300 top-0 h-[68px] flex items-center justify-between"
         style={{ marginTop: 0 }}
       >
-        <div className="nav-brand flex items-center h-full pl-4">
+        <div className="nav-brand flex items-center h-full pl-4 space-x-4">
           <button className="md:hidden text-white mr-4 text-2xl" onClick={() => setIsSidebarOpen(true)}>☰</button>
+          
+          {permission === 'default' && (
+             <button 
+               onClick={requestPermission}
+               className="text-xs bg-teal-500/20 text-teal-400 border border-teal-500/50 px-3 py-1 rounded-full animate-pulse hover:bg-teal-500/40 transition"
+             >
+               🔔 Enable Alerts
+             </button>
+          )}
           <img src="/acron.png" alt="ACRON" className="nav-logo h-10 w-auto" />
           <span className="nav-title gradient-text ml-2">ACRON</span>
         </div>

@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, Timestamp, setDoc } from 'firebase/firestore';
+
 import { useAuth } from '@/lib/auth-context';
+import { useNotification } from '@/hooks/useNotification';
+import { useRef } from 'react';
 
 type Broadcast = {
   id: string;
@@ -20,6 +23,8 @@ export default function BroadcastManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentBroadcast, setCurrentBroadcast] = useState<Partial<Broadcast>>({});
+  const { permission, requestPermission, sendNotification } = useNotification();
+  const notifiedIds = useRef<Set<string>>(new Set());
 
   // Realtime listener for broadcasts
   useEffect(() => {
@@ -47,6 +52,16 @@ export default function BroadcastManager() {
         if (!broadcast.permanent && broadcast.target_time) {
           const targetDate = new Date(broadcast.target_time);
           if (targetDate <= now) {
+            // Check if we should notify first (before deleting, or just as it happens)
+            // But wait, auto-delete happens immediately. 
+            // If we delete, we can't notify 'expired' easily unless we catch it right before.
+            // Actually, if we delete, it's gone.
+            // Let's notify right before delete.
+            if (!notifiedIds.current.has(broadcast.id)) {
+               sendNotification('⏳ Broadcast Expired', `The broadcast "${broadcast.message}" has ended.`);
+               notifiedIds.current.add(broadcast.id);
+            }
+
             try {
               await deleteDoc(doc(db, 'broadcasts', broadcast.id));
             } catch (err) {
@@ -90,6 +105,7 @@ export default function BroadcastManager() {
       } else {
         setIsEditing(false);
         setCurrentBroadcast({});
+        // alert('Broadcast saved successfully');
       }
       
       if (!currentBroadcast.linkDiscount) {
@@ -143,6 +159,14 @@ export default function BroadcastManager() {
           >
              + New Broadcast
           </button>
+          <div className="ml-4">
+             {permission === 'default' && (
+                <button onClick={requestPermission} className="bg-blue-600 px-3 py-2 rounded text-sm mr-2">Enable Notifications</button>
+             )}
+             <button onClick={() => sendNotification('🔔 Test', 'This is a test notification!')} className="bg-gray-700 px-3 py-2 rounded text-sm">
+                Test Notify
+             </button>
+          </div>
         </div>
 
         {/* Broadcast List */}
