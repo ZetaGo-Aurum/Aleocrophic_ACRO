@@ -148,45 +148,10 @@ export default function Home() {
 
   return (
     <main>
-      {/* Broadcast Banner */}
-      {showBroadcast && (
-         <div className="fixed top-0 left-0 right-0 z-50 h-10 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl flex items-center">
-            <div className="container mx-auto px-4 flex justify-center items-center h-full">
-               <div className="flex items-center space-x-3 overflow-hidden">
-                  <span className="text-xl animate-pulse">📢</span>
-                  <p className="font-bold text-sm md:text-base drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
-                     {pricingConfig.broadcast_message}
-                  </p>
-               </div>
-               {!pricingConfig.broadcast_permanent && (
-                 <button 
-                   onClick={() => setShowBroadcast(false)}
-                   className="absolute right-4 text-white hover:text-gray-200 transition"
-                 >
-                   ✕
-                 </button>
-               )}
-            </div>
-         </div>
-      )}
-      
-      {/* Toast Notification */}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      
-      {/* Auth Modal */}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-      
-      {/* Invoice Card */}
-      <InvoiceCard 
-        isOpen={showInvoice} 
-        onClose={() => setShowInvoice(false)} 
-        data={invoiceData}
-      />
-
       {/* Navigation */}
       <nav 
-        className={`nav-glass transition-all duration-300 ${showBroadcast ? 'top-10' : 'top-0'}`}
-        style={{ marginTop: 0 }} // Force no margin
+        className="nav-glass transition-all duration-300 top-0"
+        style={{ marginTop: 0 }}
       >
         <div className="nav-brand">
           <img src="/acron.png" alt="ACRON" className="nav-logo" />
@@ -223,6 +188,28 @@ export default function Home() {
           )}
         </div>
       </nav>
+
+      {/* Broadcast Banner (Positioned BELOW Header ~80px) */}
+      {showBroadcast && (
+         <div className="fixed top-[80px] left-0 right-0 z-40 h-10 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl flex items-center">
+            <div className="container mx-auto px-4 flex justify-center items-center h-full">
+               <div className="flex items-center space-x-3 overflow-hidden">
+                  <span className="text-xl animate-pulse">📢</span>
+                  <p className="font-bold text-sm md:text-base drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
+                     {pricingConfig.broadcast_message}
+                  </p>
+               </div>
+               {!pricingConfig.broadcast_permanent && (
+                 <button 
+                   onClick={() => setShowBroadcast(false)}
+                   className="absolute right-4 text-white hover:text-gray-200 transition"
+                 >
+                   ✕
+                 </button>
+               )}
+            </div>
+         </div>
+      )}
 
       {/* Hero Section */}
       <section className="hero-section">
@@ -563,6 +550,18 @@ export default function Home() {
           © 2024-2026 <strong>ZetaGo-Aurum</strong> | <strong>ALEOCROPHIC</strong> Brand
         </p>
       </footer>
+      {/* Toast Notification */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      
+      {/* Invoice Card */}
+      <InvoiceCard 
+        isOpen={showInvoice} 
+        onClose={() => setShowInvoice(false)} 
+        data={invoiceData}
+      />
     </main>
   );
 }
