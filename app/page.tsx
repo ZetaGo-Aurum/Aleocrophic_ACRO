@@ -6,7 +6,7 @@ import AuthModal from '@/components/AuthModal';
 import InvoiceCard from '@/components/InvoiceCard';
 import Toast from '@/components/Toast';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, updateDoc, addDoc, where } from 'firebase/firestore';
 
 export default function Home() {
   const { user, userData, loading, refreshUserData } = useAuth();
@@ -38,6 +38,57 @@ export default function Home() {
      return () => unsub();
   }, []);
 
+  // Fetch Broadcasts (Multi-broadcast support)
+  const [broadcasts, setBroadcasts] = useState<any[]>([]);
+  useEffect(() => {
+     const q = query(collection(db, 'broadcasts'), orderBy('created_at', 'desc'));
+     const unsub = onSnapshot(q, col => {
+        const now = new Date();
+        const active = col.docs
+          .map(d => ({id: d.id, ...d.data()}))
+          .filter((b: any) => b.permanent || !b.target_time || new Date(b.target_time) > now);
+        setBroadcasts(active);
+     });
+     return () => unsub();
+  }, []);
+
+  // Balance Minification Helper
+  const formatBalance = (n: number): string => {
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M...`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}K...`;
+    return n.toString();
+  };
+
+  // Countdown for first active broadcast
+  const [countdown, setCountdown] = useState<string>('');
+  useEffect(() => {
+    const activeBroadcast = broadcasts.find((b: any) => !b.permanent && b.target_time);
+    if (!activeBroadcast) {
+      setCountdown('');
+      return;
+    }
+    
+    const interval = setInterval(() => {
+       const target = new Date(activeBroadcast.target_time).getTime();
+       const now = new Date().getTime();
+       const dist = target - now;
+
+       if (dist < 0) {
+          setCountdown('EXPIRED');
+          clearInterval(interval);
+       } else {
+          const days = Math.floor(dist / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((dist % (1000 * 60)) / 1000);
+          if (days > 0) setCountdown(`${days}d ${hours}h ${minutes}m`);
+          else if (hours > 0) setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+          else setCountdown(`${minutes}m ${seconds}s`);
+       }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [broadcasts]);
+
   const getPriceDetails = (tier: string, baseAcron: number, baseRp: number) => {
     if (pricingConfig?.discount_active && pricingConfig?.discount_tiers?.includes(tier)) {
         const percent = pricingConfig.discount_percent || 0;
@@ -64,49 +115,7 @@ export default function Home() {
   const proPrice = getPriceDetails('proplus', 1, 62500);
   const ultPrice = getPriceDetails('ultimate', 2, 125000);
 
-  // Broadcast Logic
-  const [showBroadcast, setShowBroadcast] = useState(false);
 
-  useEffect(() => {
-    if (pricingConfig?.broadcast_active && pricingConfig?.broadcast_message) {
-        setShowBroadcast(true);
-        if (!pricingConfig.broadcast_permanent && pricingConfig.broadcast_duration) {
-            const timer = setTimeout(() => {
-                setShowBroadcast(false);
-            }, pricingConfig.broadcast_duration * 1000);
-            return () => clearTimeout(timer);
-        }
-    } else {
-        setShowBroadcast(false);
-    }
-  }, [pricingConfig]);
-
-  // Countdown Logic
-  const [countdown, setCountdown] = useState<string>('');
-  useEffect(() => {
-    if (showBroadcast && pricingConfig?.broadcast_target_time) {
-       const interval = setInterval(() => {
-          const target = new Date(pricingConfig.broadcast_target_time).getTime();
-          const now = new Date().getTime();
-          const dist = target - now;
-
-          if (dist < 0) {
-             setCountdown('EXPIRED');
-             if (pricingConfig.broadcast_auto_expire) {
-                setShowBroadcast(false);
-             }
-             clearInterval(interval);
-          } else {
-             const days = Math.floor(dist / (1000 * 60 * 60 * 24));
-             const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-             const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-             const seconds = Math.floor((dist % (1000 * 60)) / 1000);
-             setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-          }
-       }, 1000);
-       return () => clearInterval(interval);
-    }
-  }, [showBroadcast, pricingConfig]);
 
   const screenshots = [
     { src: '/screenshots/screenshot_blender.jpg', alt: 'Blender 3D Modeling', caption: 'Blender 4.3.2 - 3D Modeling & Animation' },
@@ -188,25 +197,43 @@ export default function Home() {
   return (
     <main>
       {/* Mobile Sidebar (Hamburger) */}
-      <div className={`md:hidden fixed z-[60] top-0 left-0 w-64 h-full bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-         <div className="p-4 flex justify-between items-center border-b border-gray-700">
-            <span className="text-xl font-bold gradient-text">ACRON Store</span>
-            <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+      <div className={`md:hidden fixed z-[60] top-0 left-0 w-72 h-full bg-gray-900/95 backdrop-blur-lg border-r border-gray-700/50 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+         <div className="p-5 flex justify-between items-center border-b border-gray-700/50">
+            <span className="text-xl font-bold gradient-text">ACRON</span>
+            <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 hover:text-white p-2">✕</button>
          </div>
-         <div className="p-4 space-y-4">
-            <button onClick={() => { setActiveTab('os'); setIsSidebarOpen(false); }} className={`block w-full text-left ${activeTab === 'os' ? 'text-teal-400 font-bold' : 'text-gray-300'} hover:text-white`}>ACRO OS</button>
-            <button onClick={() => { setActiveTab('store'); setIsSidebarOpen(false); }} className={`block w-full text-left ${activeTab === 'store' ? 'text-teal-400 font-bold' : 'text-gray-300'} hover:text-white`}>Official Store</button>
+         <div className="p-4 space-y-2">
+            {/* Tab Navigation - Desktop Style */}
+            <button 
+              onClick={() => { setActiveTab('os'); setIsSidebarOpen(false); }} 
+              className={`flex items-center w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'os' ? 'bg-teal-500/20 text-teal-400 border border-teal-500/50' : 'text-gray-300 hover:bg-gray-800'}`}
+            >
+              <span className="mr-3">🖥️</span> ACRO OS
+            </button>
+            <button 
+              onClick={() => { setActiveTab('store'); setIsSidebarOpen(false); }} 
+              className={`flex items-center w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'store' ? 'bg-teal-500/20 text-teal-400 border border-teal-500/50' : 'text-gray-300 hover:bg-gray-800'}`}
+            >
+              <span className="mr-3">🛍️</span> Official Store
+            </button>
+            
+            <div className="h-px bg-gray-700/50 my-4"></div>
+            
             {user ? (
-               <div className="pt-4 border-t border-gray-700">
-                  <div className="flex items-center space-x-3 mb-4">
-                     {userData?.photoURL && <img src={userData.photoURL} alt="User" className="w-8 h-8 rounded-full" />}
-                     <span className="text-sm font-bold text-white">{userData?.displayName}</span>
+               <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-xl">
+                     {userData?.photoURL && <img src={userData.photoURL} alt="User" className="w-10 h-10 rounded-full border-2 border-teal-500" />}
+                     <div>
+                       <div className="text-sm font-bold text-white">{userData?.displayName}</div>
+                       <div className="text-xs text-yellow-400">🪙 {formatBalance(userData?.acronBalance || 0)} ACRON</div>
+                     </div>
                   </div>
-                  <div className="text-yellow-500 mb-4">Balance: {userData?.acronBalance} ACRON</div>
-                  <a href="/profile" className="block text-center w-full bg-gray-800 py-2 rounded text-sm mb-2">My Profile</a>
+                  <a href="/profile" className="block text-center w-full bg-gray-800 py-3 rounded-xl text-sm hover:bg-gray-700 transition">My Profile</a>
                </div>
             ) : (
-               <button onClick={() => { setIsSidebarOpen(false); setShowAuthModal(true); }} className="w-full bg-teal-600 py-2 rounded text-white font-bold">Sign In</button>
+               <button onClick={() => { setIsSidebarOpen(false); setShowAuthModal(true); }} className="w-full bg-gradient-to-r from-teal-500 to-blue-600 py-3 rounded-xl text-white font-bold">
+                 Sign In
+               </button>
             )}
          </div>
       </div>
@@ -236,7 +263,7 @@ export default function Home() {
               {/* Balance */}
               <div className="nav-balance">
                 <span className="balance-icon">🪙</span>
-                <span className="balance-value">{userData?.acronBalance || 0}</span>
+                <span className="balance-value">{formatBalance(userData?.acronBalance || 0)}</span>
               </div>
               
               {/* Profile Avatar */}
@@ -258,26 +285,22 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Broadcast Banner (Positioned BELOW Header EXACTLY at 68px) */}
-      {showBroadcast && (
-         <div className="fixed top-[68px] left-0 right-0 z-40 h-10 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl flex items-center">
-            <div className="container mx-auto px-4 flex justify-center items-center h-full">
-               <div className="flex items-center space-x-3 overflow-hidden">
-                  <span className="text-xl animate-pulse">📢</span>
-                  <p className="font-bold text-sm md:text-base drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
-                     {pricingConfig.broadcast_message} 
-                     {pricingConfig.broadcast_target_time && <span className="ml-2 text-yellow-300 font-mono">[{countdown}]</span>}
-                  </p>
-               </div>
-               {!pricingConfig.broadcast_permanent && (
-                 <button 
-                   onClick={() => setShowBroadcast(false)}
-                   className="absolute right-4 text-white hover:text-gray-200 transition"
-                 >
-                   ✕
-                 </button>
-               )}
-            </div>
+      {/* Broadcast Banners (Multi-broadcast support) */}
+      {broadcasts.length > 0 && (
+         <div className="fixed top-[68px] left-0 right-0 z-40 bg-gradient-to-r from-yellow-600 to-red-600 text-white shadow-xl">
+            {broadcasts.slice(0, 2).map((broadcast: any, index: number) => (
+              <div key={broadcast.id} className={`flex items-center justify-center py-2 ${index > 0 ? 'border-t border-yellow-500/30' : ''}`}>
+                 <div className="flex items-center space-x-3 px-4">
+                    <span className="text-lg animate-pulse">📢</span>
+                    <p className="font-bold text-sm md:text-base drop-shadow-md">
+                       {broadcast.message}
+                       {!broadcast.permanent && broadcast.target_time && countdown && (
+                         <span className="ml-2 text-yellow-300 font-mono text-xs">[{countdown}]</span>
+                       )}
+                    </p>
+                 </div>
+              </div>
+            ))}
          </div>
       )}
 
@@ -609,21 +632,32 @@ export default function Home() {
 
       {/* === STORE TAB === */}
       {activeTab === 'store' && (
-      <section id="products" className="min-h-screen bg-gray-900 relative" style={{ paddingTop: showBroadcast ? '128px' : '88px' }}>
+      <section id="products" className="min-h-screen bg-gray-900 relative" style={{ paddingTop: broadcasts.length > 0 ? `${88 + broadcasts.slice(0,2).length * 40}px` : '88px' }}>
          <div className="container mx-auto px-6 relative z-10 py-12">
             <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 gradient-text">
                Official Store
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-               {products.map((product) => (
+               {products.map((product) => {
+                 const isFree = product.price === 0;
+                 const canAfford = (userData?.acronBalance || 0) >= product.price;
+                 const shortage = product.price - (userData?.acronBalance || 0);
+                 
+                 return (
                   <div key={product.id} className={`bg-gray-800 rounded-2xl p-6 border ${product.highlight ? 'border-yellow-500 shadow-yellow-500/20 shadow-lg' : 'border-gray-700'} hover:scale-105 transition duration-300`}>
                      {product.highlight && <div className="text-yellow-400 text-xs font-bold mb-2 uppercase tracking-wide">⭐ Featured</div>}
                      <div className="flex justify-between items-start mb-4">
                         <h3 className="text-2xl font-bold text-white">{product.name}</h3>
-                        <span className="bg-gray-700 px-3 py-1 rounded-full text-yellow-400 font-mono font-bold">
-                           {product.price} ACRON
-                        </span>
+                        {isFree ? (
+                          <span className="bg-green-600 px-3 py-1 rounded-full text-white font-bold text-sm">
+                             FREE
+                          </span>
+                        ) : (
+                          <span className="bg-gray-700 px-3 py-1 rounded-full text-yellow-400 font-mono font-bold">
+                             {product.price} ACRON
+                          </span>
+                        )}
                      </div>
                      <p className="text-gray-400 mb-6 min-h-[3rem]">{product.description}</p>
                      
@@ -631,13 +665,53 @@ export default function Home() {
                         {product.imageUrl && <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-lg mb-4" />}
                         
                         {product.fileUrl ? (
-                           <a 
-                             href={product.fileUrl} 
-                             target="_blank"
-                             className="block w-full text-center py-3 rounded-xl bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold hover:shadow-lg hover:shadow-teal-500/30 transition transform active:scale-95"
+                           <button 
+                             onClick={async () => {
+                               if (!user) {
+                                 setShowAuthModal(true);
+                                 return;
+                               }
+                               if (isFree || canAfford) {
+                                 // Process purchase
+                                 try {
+                                   const newBalance = (userData?.acronBalance || 0) - product.price;
+                                   await updateDoc(doc(db, 'users', user.uid), {
+                                     acronBalance: newBalance
+                                   });
+                                   // Add to purchases
+                                   await addDoc(collection(db, 'users', user.uid, 'purchases'), {
+                                     productId: product.id,
+                                     productName: product.name,
+                                     price: product.price,
+                                     fileUrl: product.fileUrl,
+                                     purchasedAt: new Date().toISOString()
+                                   });
+                                   await refreshUserData();
+                                   // Show invoice
+                                   setInvoiceData({
+                                     item: product.name,
+                                     price: isFree ? 'FREE' : `${product.price} ACRON`,
+                                     date: new Date().toLocaleDateString(),
+                                     downloadUrl: product.fileUrl
+                                   });
+                                   setShowInvoice(true);
+                                   showToast(`Purchase successful! Enjoy ${product.name}`, 'success');
+                                 } catch (err) {
+                                   console.error(err);
+                                   showToast('Purchase failed', 'error');
+                                 }
+                               } else {
+                                 showToast(`Saldo Kurang: ${shortage} ACRON`, 'warning');
+                               }
+                             }}
+                             className={`block w-full text-center py-3 rounded-xl font-bold transition transform active:scale-95 ${
+                               isFree || canAfford 
+                                 ? 'bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:shadow-lg hover:shadow-teal-500/30'
+                                 : 'bg-gray-600 text-gray-300'
+                             }`}
                            >
-                             Download Now ⬇️
-                           </a>
+                             {isFree ? 'Get Free 🎁' : canAfford ? 'Buy Now 🛒' : `Need ${shortage} more ACRON`}
+                           </button>
                         ) : (
                            <button disabled className="block w-full text-center py-3 rounded-xl bg-gray-700 text-gray-400 font-bold cursor-not-allowed">
                              Unavailable
@@ -645,7 +719,7 @@ export default function Home() {
                         )}
                      </div>
                   </div>
-               ))}
+                );})}
                
                {products.length === 0 && (
                   <div className="col-span-3 text-center text-gray-500 py-12">

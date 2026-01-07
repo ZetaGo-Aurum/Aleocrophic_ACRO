@@ -41,6 +41,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Broadcasts Rules (Public Read, Admin Write)
+    match /broadcasts/{broadcastId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User Purchases - Allow authenticated users to update their own purchases
+    match /users/{userId}/purchases/{purchaseId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Rules for 'posts'
     match /posts/{postId} {
       allow read: if request.auth != null;

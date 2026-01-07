@@ -52,6 +52,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <a href="/admin/products" className="block py-2 px-4 rounded hover:bg-gray-700 text-gray-300 hover:text-white transition">
             📦 Products
           </a>
+          <a href="/admin/broadcasts" className="block py-2 px-4 rounded hover:bg-gray-700 text-gray-300 hover:text-white transition">
+            📢 Broadcasts
+          </a>
           <a href="https://trakteer.id/manage/balance" target="_blank" className="block py-2 px-4 rounded hover:bg-gray-700 text-yellow-500 hover:text-yellow-400 transition">
              💰 Trakteer Dash
           </a>
