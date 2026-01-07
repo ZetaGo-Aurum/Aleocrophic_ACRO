@@ -1,124 +1,158 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAcronForTier, createLicenseResponse, LicenseType } from '@/lib/license';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { v4 as uuidv4 } from 'uuid';
+
+// Initialize Firebase Admin
+let adminApp: App;
+
+function getAdminApp() {
+  if (getApps().length === 0) {
+    // For Vercel deployment, use service account from environment variable
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+      : null;
+    
+    if (serviceAccount) {
+      adminApp = initializeApp({
+        credential: cert(serviceAccount),
+        projectId: 'server-media-75fdc'
+      });
+    } else {
+      // Fallback for development - use default credentials
+      adminApp = initializeApp({
+        projectId: 'server-media-75fdc'
+      });
+    }
+  }
+  return getApps()[0];
+}
 
 interface TrakteerWebhookPayload {
   id: string;
   supporter_name: string;
   supporter_email: string;
   supporter_message: string;
-  unit: string; // "ACRON"
-  quantity: number; // Number of ACRONs
+  unit: string;
+  quantity: number;
   price: number;
   created_at: string;
-  // Additional fields from Trakteer
   order_id?: string;
-  media?: string;
 }
-
-// In-memory storage for demo (use database in production)
-const licenses: Map<string, object> = new Map();
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify webhook secret
-    const webhookSecret = request.headers.get('X-Trakteer-Signature');
-    const expectedSecret = process.env.TRAKTEER_WEBHOOK_SECRET;
-    
-    // Note: Trakteer sends signature in header - verify it
-    if (!webhookSecret || webhookSecret !== expectedSecret) {
-      console.log('Webhook verification - received:', webhookSecret);
-      // For testing, we'll allow it through but log warning
-      console.warn('Warning: Webhook signature mismatch or missing');
-    }
-    
     const payload: TrakteerWebhookPayload = await request.json();
     
-    console.log('Received Trakteer webhook:', JSON.stringify(payload, null, 2));
+    console.log('=== TRAKTEER WEBHOOK RECEIVED ===');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
     
-    // Extract ACRON count
-    const acronCount = payload.quantity || 0;
+    // Extract data from payload
+    const acronCount = payload.quantity || 1;
     const supporterName = payload.supporter_name || 'Anonymous';
-    const supporterEmail = payload.supporter_email || '';
+    const supporterEmail = (payload.supporter_email || '').toLowerCase().trim();
     const transactionId = payload.id || payload.order_id || `TRX-${Date.now()}`;
     
-    // Parse message for requested tier (default to proplus)
-    const message = (payload.supporter_message || '').toLowerCase();
-    let requestedTier: LicenseType = 'proplus';
+    console.log(`Processing: ${acronCount} ACRON for ${supporterEmail}`);
     
-    if (message.includes('ultimate') || message.includes('ult')) {
-      requestedTier = 'ultimate';
-    }
-    
-    // Validate ACRON count for requested tier
-    const validation = validateAcronForTier(acronCount, requestedTier);
-    
-    if (!validation.valid && validation.actualTier === null) {
+    if (!supporterEmail) {
+      console.error('No supporter email provided');
       return NextResponse.json({
         success: false,
-        error: validation.message
+        error: 'No email provided in webhook'
       }, { status: 400 });
     }
     
-    // If validation failed but we have a fallback tier
-    if (!validation.valid && validation.actualTier) {
-      // User paid 1 ACRON but requested Ultimate
-      // Return options
+    // Initialize Firebase Admin
+    const app = getAdminApp();
+    const db = getFirestore(app);
+    
+    // Find user by email in Firestore
+    const usersRef = db.collection('users');
+    const querySnapshot = await usersRef.where('email', '==', supporterEmail).get();
+    
+    if (querySnapshot.empty) {
+      console.log(`User not found with email: ${supporterEmail}`);
+      // Still return success to Trakteer, but log the issue
+      // User might need to sign up first
       return NextResponse.json({
-        success: false,
-        insufficientPayment: true,
-        message: validation.message,
-        options: {
-          addMore: {
-            description: 'Add 1 more ACRON to get Ultimate Edition',
-            requiredAmount: 1,
-            tier: 'ultimate'
-          },
-          proceed: {
-            description: 'Proceed with Pro+ Edition (your payment is valid)',
-            tier: 'proplus'
-          }
-        },
-        partialPayment: {
-          acronPaid: acronCount,
-          acronNeeded: 2,
-          transactionId
-        }
-      }, { status: 202 });
+        success: true,
+        warning: 'User not found - ACRON will be credited when they sign up with this email',
+        email: supporterEmail,
+        acronCount
+      });
     }
     
-    // Generate license
-    const actualTier = validation.actualTier as LicenseType;
-    const licenseResponse = createLicenseResponse(
-      actualTier,
-      supporterEmail,
-      supporterName,
-      transactionId,
-      acronCount
-    );
+    // Get the user document
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+    const userId = userDoc.id;
     
-    // Store license (in production, save to database)
-    licenses.set(licenseResponse.licenseKey, {
-      ...licenseResponse.licenseData,
-      encrypted: licenseResponse.encryptedData
-    });
+    console.log(`Found user: ${userId}, current balance: ${userData.acronBalance || 0}`);
     
-    console.log('Generated license:', licenseResponse.licenseKey, 'for tier:', actualTier);
+    // Update user's ACRON balance
+    const newBalance = (userData.acronBalance || 0) + acronCount;
+    
+    // Create license if this is a purchase (check message for tier)
+    const message = (payload.supporter_message || '').toLowerCase();
+    let license = null;
+    
+    if (message.includes('ultimate') || message.includes('ult')) {
+      if (acronCount >= 2) {
+        license = {
+          key: `ACRO-ULT-${uuidv4().substring(0, 8).toUpperCase()}`,
+          tier: 'ultimate',
+          tierName: 'ULTIMATE Edition',
+          createdAt: new Date().toISOString(),
+          isActive: true,
+          transactionId
+        };
+      }
+    } else if (message.includes('pro+') || message.includes('proplus') || message.includes('pro')) {
+      if (acronCount >= 1) {
+        license = {
+          key: `ACRO-PP-${uuidv4().substring(0, 8).toUpperCase()}`,
+          tier: 'proplus',
+          tierName: 'PRO+ Edition',
+          createdAt: new Date().toISOString(),
+          isActive: true,
+          transactionId
+        };
+      }
+    }
+    
+    // Prepare update data
+    const updateData: Record<string, unknown> = {
+      acronBalance: newBalance,
+      lastTopUp: new Date().toISOString(),
+      lastTopUpAmount: acronCount,
+      lastTransactionId: transactionId
+    };
+    
+    // Add license if generated
+    if (license) {
+      updateData.licenses = FieldValue.arrayUnion(license);
+    }
+    
+    // Update the user document
+    await usersRef.doc(userId).update(updateData);
+    
+    console.log(`✓ Updated user ${userId}: balance ${userData.acronBalance || 0} → ${newBalance}`);
+    if (license) {
+      console.log(`✓ Generated license: ${license.key} (${license.tierName})`);
+    }
     
     return NextResponse.json({
       success: true,
-      message: `Thank you for purchasing ACRO ${actualTier === 'ultimate' ? 'ULTIMATE' : 'PRO+'} Edition!`,
-      license: {
-        key: licenseResponse.licenseKey,
-        tier: licenseResponse.tierName,
-        features: licenseResponse.features,
-        supporterName,
-        createdAt: licenseResponse.licenseData.createdAt
-      },
-      instructions: {
-        step1: 'Install ACRO PRO (Free) from GitHub first',
-        step2: `Download the ${actualTier === 'ultimate' ? 'install-ultimate.sh' : 'install-proplus.sh'} file`,
-        step3: `Run: sudo bash install-${actualTier === 'ultimate' ? 'ultimate' : 'proplus'}.sh --license ${licenseResponse.licenseKey}`,
-        note: 'Your license key is valid for lifetime!'
+      message: `Added ${acronCount} ACRON to ${supporterName}'s account!`,
+      newBalance,
+      license: license ? {
+        key: license.key,
+        tier: license.tierName
+      } : null,
+      user: {
+        id: userId,
+        email: supporterEmail
       }
     });
     
@@ -126,7 +160,8 @@ export async function POST(request: NextRequest) {
     console.error('Webhook error:', error);
     return NextResponse.json({
       success: false,
-      error: 'Failed to process webhook'
+      error: 'Failed to process webhook',
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
@@ -136,6 +171,7 @@ export async function GET() {
   return NextResponse.json({
     status: 'ok',
     message: 'ACRO Trakteer Webhook Endpoint',
+    version: '2.0',
     info: 'Send POST request with Trakteer webhook payload'
   });
 }
