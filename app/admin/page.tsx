@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, where, updateDoc } from 'firebase/firestore';
 import { useAuth } from '@/lib/auth-context';
 
 type PricingConfig = {
@@ -38,6 +38,10 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalRevenue: 0, totalLicenses: 0 });
   const [saving, setSaving] = useState(false);
+  
+  // User Management State
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [editBalance, setEditBalance] = useState<string>('');
 
   // Fetch Pricing Config
   useEffect(() => {
@@ -124,6 +128,22 @@ export default function AdminDashboard() {
       alert('Failed to save config.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle Save User Balance
+  const handleSaveBalance = async () => {
+    if (!editingUser) return;
+    try {
+      await updateDoc(doc(db, 'users', editingUser.uid), {
+        acronBalance: parseInt(editBalance) || 0
+      });
+      setEditingUser(null);
+      setEditBalance('');
+      alert('Balance updated!');
+    } catch (error) {
+      console.error('Error updating balance:', error);
+      alert('Failed to update balance.');
     }
   };
 
@@ -285,118 +305,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Broadcast Management */}
-        <div className="mt-8 pt-6 border-t border-gray-700">
-           <div className="flex justify-between items-center mb-4">
-               <h3 className="text-xl font-bold text-white flex items-center">
-                 <span className="bg-yellow-500 w-2 h-8 rounded mr-3"></span>
-                 Broadcast Advertisement
-               </h3>
-               <label className="flex items-center space-x-2 cursor-pointer">
-                 <input 
-                   type="checkbox" 
-                   checked={config?.broadcast_active ?? false}
-                   onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_active: e.target.checked} : null)}
-                   className="form-checkbox h-5 w-5 text-yellow-500 rounded bg-gray-900 border-gray-600"
-                 />
-                 <span className={config?.broadcast_active ? "text-yellow-400 font-bold" : "text-gray-500"}>
-                   {config?.broadcast_active ? 'ON AIR' : 'OFF'}
-                 </span>
-               </label>
-           </div>
-           
-           <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${config?.broadcast_active ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-              <div>
-                 <label className="block text-sm text-gray-400 mb-1">Message Content</label>
-                 <textarea
-                   value={config?.broadcast_message || ''}
-                   onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_message: e.target.value} : null)}
-                   className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none h-24 resize-none"
-                   placeholder="Enter your broadcast message here..."
-                 />
-              </div>
-              <div className="space-y-4">
-                 <div>
-                    <label className="block text-sm text-gray-400 mb-1">Duration Type</label>
-                    <div className="flex flex-col space-y-2">
-                        <label className="flex items-center space-x-2">
-                            <input 
-                              type="radio"
-                              name="duration"
-                              checked={config?.broadcast_permanent === true}
-                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: true, broadcast_target_time: undefined} : null)}
-                              className="text-yellow-500 bg-gray-900 border-gray-600"
-                            />
-                            <span>Permanent (Always Show)</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                            <input 
-                              type="radio"
-                              name="duration"
-                              checked={config?.broadcast_permanent === false && !config?.broadcast_target_time}
-                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: false, broadcast_target_time: undefined} : null)}
-                              className="text-yellow-500 bg-gray-900 border-gray-600"
-                            />
-                            <span>Timed (Seconds)</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                            <input 
-                              type="radio"
-                              name="duration"
-                              checked={!!config?.broadcast_target_time}
-                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: false, broadcast_target_time: new Date().toISOString().slice(0, 16)} : null)}
-                              className="text-yellow-500 bg-gray-900 border-gray-600"
-                            />
-                            <span>Countdown (Target Date) ⏳</span>
-                        </label>
-                    </div>
-                 </div>
-
-                 {/* Timed Config */}
-                  {config?.broadcast_permanent === false && !config?.broadcast_target_time && (
-                    <div>
-                       <label className="block text-sm text-gray-400 mb-1">Seconds to Show</label>
-                       <input
-                         type="text"
-                         inputMode="numeric"
-                         value={config?.broadcast_duration?.toString() ?? ''}
-                         onChange={(e) => {
-                           const val = e.target.value;
-                           if (val === '' || /^\d*$/.test(val)) {
-                             setConfig(prev => prev ? {...prev, broadcast_duration: val === '' ? 10 : parseInt(val)} : null);
-                           }
-                         }}
-                         className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
-                         placeholder="10"
-                      />
-                    </div>
-                  )}
-
-                 {/* Countdown Config */}
-                 {!!config?.broadcast_target_time && (
-                   <div className="space-y-3 p-3 bg-gray-800 rounded border border-gray-700">
-                      <div>
-                         <label className="block text-sm text-gray-400 mb-1">Target Date & Time</label>
-                         <input 
-                            type="datetime-local"
-                            value={config.broadcast_target_time}
-                            onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_target_time: e.target.value} : null)}
-                            className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
-                         />
-                      </div>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                         <input 
-                           type="checkbox" 
-                           checked={config?.broadcast_auto_expire ?? false}
-                           onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_auto_expire: e.target.checked} : null)}
-                           className="form-checkbox text-red-500 rounded bg-gray-900 border-gray-600"
-                         />
-                         <span className="text-xs text-gray-300">Auto-Expire (Hide when done)</span>
-                      </label>
-                   </div>
-                 )}
-              </div>
-           </div>
+        {/* Quick Links to Managers */}
+        <div className="mt-6 p-4 bg-gray-700/30 rounded-lg flex flex-wrap gap-3">
+           <a href="/admin/broadcasts" className="flex items-center px-4 py-2 bg-yellow-600/20 border border-yellow-600 rounded-lg text-yellow-400 hover:bg-yellow-600/40 transition">
+             📢 Manage Broadcasts
+           </a>
+           <a href="/admin/products" className="flex items-center px-4 py-2 bg-teal-600/20 border border-teal-600 rounded-lg text-teal-400 hover:bg-teal-600/40 transition">
+             📦 Manage Products
+           </a>
         </div>
 
         <div className="mt-8 flex justify-end">
@@ -426,37 +342,86 @@ export default function AdminDashboard() {
                  <th className="p-3">Balance</th>
                  <th className="p-3">Tier</th>
                  <th className="p-3">Last Purchase</th>
+                 <th className="p-3">Actions</th>
                </tr>
              </thead>
              <tbody className="text-sm">
-                {users.map((user) => (
-                  <tr key={user.uid} className="hover:bg-gray-750 transition border-b border-gray-700/50">
-                    <td className="p-3 font-medium text-white">{user.displayName}</td>
-                    <td className="p-3 text-gray-300">{user.email}</td>
-                    <td className="p-3 text-yellow-400 font-bold">{user.acronBalance} ACRON</td>
+                {users.map((u) => (
+                  <tr key={u.uid} className="hover:bg-gray-750 transition border-b border-gray-700/50">
+                    <td className="p-3 font-medium text-white">{u.displayName}</td>
+                    <td className="p-3 text-gray-300">{u.email}</td>
+                    <td className="p-3 text-yellow-400 font-bold">{u.acronBalance} ACRON</td>
                     <td className="p-3">
                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                         user.tier === 'ultimate' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' :
-                         user.tier === 'proplus' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
+                         u.tier === 'ultimate' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' :
+                         u.tier === 'proplus' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
                          'bg-gray-600 text-white'
                        }`}>
-                         {user.tier}
+                         {u.tier}
                        </span>
                     </td>
                     <td className="p-3 text-gray-400">
-                      {user.lastPurchase ? new Date(user.lastPurchase).toLocaleDateString() : 'Never'}
+                      {u.lastPurchase ? new Date(u.lastPurchase).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td className="p-3">
+                      <button 
+                        onClick={() => { setEditingUser(u); setEditBalance(u.acronBalance.toString()); }}
+                        className="px-3 py-1 bg-purple-600/30 border border-purple-500 text-purple-400 rounded hover:bg-purple-600/50 transition text-xs"
+                      >
+                        ✏️ Edit
+                      </button>
                     </td>
                   </tr>
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-gray-500">No users found.</td>
+                    <td colSpan={6} className="p-8 text-center text-gray-500">No users found.</td>
                   </tr>
                 )}
              </tbody>
           </table>
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+           <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
+              <h2 className="text-xl font-bold mb-4 text-white">Edit User: {editingUser.displayName}</h2>
+              <p className="text-sm text-gray-400 mb-4">{editingUser.email}</p>
+              
+              <div className="mb-4">
+                 <label className="block text-sm text-gray-400 mb-1">ACRON Balance</label>
+                 <input 
+                   type="text"
+                   inputMode="numeric"
+                   value={editBalance}
+                   onChange={(e) => {
+                     const val = e.target.value;
+                     if (val === '' || /^\d*$/.test(val)) setEditBalance(val);
+                   }}
+                   className="w-full bg-gray-900 border border-gray-600 rounded p-3 text-white text-xl font-mono focus:border-yellow-500 outline-none"
+                   placeholder="0"
+                 />
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                 <button 
+                   onClick={() => setEditingUser(null)}
+                   className="px-4 py-2 hover:bg-gray-700 rounded transition"
+                 >
+                   Cancel
+                 </button>
+                 <button 
+                   onClick={handleSaveBalance}
+                   className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded font-bold transition"
+                 >
+                   Save Balance
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }
