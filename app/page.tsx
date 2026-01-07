@@ -150,22 +150,22 @@ export default function Home() {
     <main>
       {/* Navigation */}
       <nav 
-        className="nav-glass transition-all duration-300 top-0"
+        className="nav-glass transition-all duration-300 top-0 h-[68px] flex items-center"
         style={{ marginTop: 0 }}
       >
-        <div className="nav-brand">
-          <img src="/acron.png" alt="ACRON" className="nav-logo" />
-          <span className="nav-title gradient-text">ACRO</span>
+        <div className="nav-brand flex items-center h-full">
+          <img src="/acron.png" alt="ACRON" className="nav-logo h-10 w-auto" />
+          <span className="nav-title gradient-text ml-2">ACRO</span>
         </div>
         
-        <div className="nav-menu">
+        <div className="nav-menu flex items-center h-full">
           <a href="#pricing" className="nav-link">Pricing</a>
           <a href="#gallery" className="nav-link">Gallery</a>
           
           {loading ? (
             <div className="nav-skeleton" />
           ) : user ? (
-            <div className="nav-user">
+            <div className="nav-user flex items-center">
               {/* Balance */}
               <div className="nav-balance">
                 <span className="balance-icon">🪙</span>
@@ -173,11 +173,13 @@ export default function Home() {
               </div>
               
               {/* Profile Avatar */}
-              <a href="/profile" className="nav-avatar">
+              <a href="/profile" className="nav-avatar ml-3">
                 {userData?.photoURL ? (
-                  <img src={userData.photoURL} alt="Profile" />
+                  <img src={userData.photoURL} alt="Profile" className="h-8 w-8 rounded-full" />
                 ) : (
-                  <span>{userData?.displayName?.charAt(0).toUpperCase() || '?'}</span>
+                  <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
+                    <span>{userData?.displayName?.charAt(0).toUpperCase() || '?'}</span>
+                  </div>
                 )}
               </a>
             </div>
@@ -189,9 +191,9 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Broadcast Banner (Positioned BELOW Header ~80px) */}
+      {/* Broadcast Banner (Positioned BELOW Header EXACTLY at 68px) */}
       {showBroadcast && (
-         <div className="fixed top-[80px] left-0 right-0 z-40 h-10 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl flex items-center">
+         <div className="fixed top-[68px] left-0 right-0 z-40 h-10 bg-gradient-to-r from-yellow-600 to-red-600 text-white animate-slide-down shadow-xl flex items-center">
             <div className="container mx-auto px-4 flex justify-center items-center h-full">
                <div className="flex items-center space-x-3 overflow-hidden">
                   <span className="text-xl animate-pulse">📢</span>
