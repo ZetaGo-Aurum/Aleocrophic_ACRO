@@ -21,8 +21,13 @@ export function useNotification() {
            icon: '/acron.png'
         });
       }
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
+    } catch (error: any) {
+      if (error?.message?.includes('Extension context invalidated')) {
+        console.warn('Browser extension updated/crashed. Please refresh the page to enable notifications.');
+        // Optionally alert user: alert("Please refresh the page to enable notifications.");
+      } else {
+        console.error('Error requesting notification permission:', error);
+      }
     }
   }, []);
 
