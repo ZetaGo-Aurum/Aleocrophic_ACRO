@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/lib/auth-context';
 
 type Product = {
@@ -30,6 +31,8 @@ export default function ProductManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Fetch Pricing Config for discount info
   useEffect(() => {
@@ -60,8 +63,38 @@ export default function ProductManager() {
     fetchProducts();
   }, [user]);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(progress);
+      },
+      (error) => {
+        console.error("Upload error:", error);
+        alert("Upload failed!");
+        setUploading(false);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setCurrentProduct(prev => ({ ...prev, imageUrl: downloadURL }));
+          setUploading(false);
+        });
+      }
+    );
+  };
+
   const handleSave = async () => {
-    if (!currentProduct.name || !currentProduct.price) return;
+    if (!currentProduct.name || currentProduct.price === undefined) {
+      alert("Please fill in Product Name and Price!");
+      return;
+    }
 
     try {
       const productData = {
@@ -238,20 +271,31 @@ export default function ProductManager() {
                        <div>
                           <label className="block text-sm text-gray-400 mb-1">Price (ACRON) *</label>
                           <input 
-                            type="number"
-                            step="0.1"
-                            value={currentProduct.price || 0}
-                            onChange={(e) => setCurrentProduct({...currentProduct, price: Number(e.target.value)})}
+                            type="text"
+                            inputMode="decimal"
+                            value={currentProduct.price?.toString() ?? ''}
+                            onChange={(e) => {
+                               const val = e.target.value;
+                               if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                  setCurrentProduct({...currentProduct, price: val === '' ? 0 : Number(val)});
+                               }
+                            }}
                             className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
+                            placeholder="0"
                           />
                        </div>
                        <div>
                           <label className="block text-sm text-gray-400 mb-1">Original Price (Optional)</label>
                           <input 
-                            type="number"
-                            step="0.1"
-                            value={currentProduct.originalPrice || ''}
-                            onChange={(e) => setCurrentProduct({...currentProduct, originalPrice: e.target.value ? Number(e.target.value) : undefined})}
+                            type="text"
+                            inputMode="decimal"
+                            value={currentProduct.originalPrice?.toString() ?? ''}
+                            onChange={(e) => {
+                               const val = e.target.value;
+                               if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                  setCurrentProduct({...currentProduct, originalPrice: val === '' ? undefined : Number(val)});
+                               }
+                            }}
                             className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
                             placeholder="For strikethrough"
                           />
@@ -259,14 +303,23 @@ export default function ProductManager() {
                     </div>
                     
                     <div>
-                       <label className="block text-sm text-gray-400 mb-1">Image URL (Optional)</label>
-                       <input 
-                         type="text"
-                         value={currentProduct.imageUrl || ''}
-                         onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})}
-                         className="w-full bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
-                         placeholder="https://..."
-                       />
+                       <label className="block text-sm text-gray-400 mb-1">Image URL (Upload or Paste)</label>
+                       <div className="flex space-x-2">
+                          <input 
+                            type="text"
+                            value={currentProduct.imageUrl || ''}
+                            onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})}
+                            className="flex-1 bg-gray-900 border border-gray-600 rounded p-2 focus:border-teal-500 outline-none"
+                            placeholder="https://..."
+                          />
+                          <label className="cursor-pointer bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded flex items-center justify-center">
+                             <span>{uploading ? `${Math.round(uploadProgress)}%` : 'Upload'}</span>
+                             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+                          </label>
+                       </div>
+                       {currentProduct.imageUrl && (
+                          <img src={currentProduct.imageUrl} alt="Preview" className="mt-2 h-20 w-auto rounded border border-gray-700 object-cover" />
+                       )}
                     </div>
                     
                     <div>

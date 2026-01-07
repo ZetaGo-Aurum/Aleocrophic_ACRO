@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, query, orderBy, limit, where, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, orderBy, limit, where } from 'firebase/firestore';
 import { useAuth } from '@/lib/auth-context';
 
 type PricingConfig = {
@@ -38,10 +38,8 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalRevenue: 0, totalLicenses: 0 });
   const [saving, setSaving] = useState(false);
-  
-  // User Management State
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
-  const [editBalance, setEditBalance] = useState<string>('');
+  const [newBalance, setNewBalance] = useState<string>('');
 
   // Fetch Pricing Config
   useEffect(() => {
@@ -131,19 +129,18 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle Save User Balance
-  const handleSaveBalance = async () => {
-    if (!editingUser) return;
+  const handleUpdateBalance = async () => {
+    if (!editingUser || newBalance === '') return;
     try {
       await updateDoc(doc(db, 'users', editingUser.uid), {
-        acronBalance: parseInt(editBalance) || 0
+        acronBalance: parseFloat(newBalance)
       });
       setEditingUser(null);
-      setEditBalance('');
-      alert('Balance updated!');
+      setNewBalance('');
+      alert(`Updated balance for ${editingUser.displayName}`);
     } catch (error) {
-      console.error('Error updating balance:', error);
-      alert('Failed to update balance.');
+       console.error('Error updating balance:', error);
+       alert('Failed to update balance');
     }
   };
 
@@ -305,15 +302,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Quick Links to Managers */}
-        <div className="mt-6 p-4 bg-gray-700/30 rounded-lg flex flex-wrap gap-3">
-           <a href="/admin/broadcasts" className="flex items-center px-4 py-2 bg-yellow-600/20 border border-yellow-600 rounded-lg text-yellow-400 hover:bg-yellow-600/40 transition">
-             📢 Manage Broadcasts
-           </a>
-           <a href="/admin/products" className="flex items-center px-4 py-2 bg-teal-600/20 border border-teal-600 rounded-lg text-teal-400 hover:bg-teal-600/40 transition">
-             📦 Manage Products
-           </a>
-        </div>
+
 
         <div className="mt-8 flex justify-end">
           <button 
@@ -342,69 +331,66 @@ export default function AdminDashboard() {
                  <th className="p-3">Balance</th>
                  <th className="p-3">Tier</th>
                  <th className="p-3">Last Purchase</th>
-                 <th className="p-3">Actions</th>
                </tr>
              </thead>
              <tbody className="text-sm">
-                {users.map((u) => (
-                  <tr key={u.uid} className="hover:bg-gray-750 transition border-b border-gray-700/50">
-                    <td className="p-3 font-medium text-white">{u.displayName}</td>
-                    <td className="p-3 text-gray-300">{u.email}</td>
-                    <td className="p-3 text-yellow-400 font-bold">{u.acronBalance} ACRON</td>
+                {users.map((user) => (
+                  <tr key={user.uid} className="hover:bg-gray-750 transition border-b border-gray-700/50">
+                    <td className="p-3 font-medium text-white">{user.displayName}</td>
+                    <td className="p-3 text-gray-300">{user.email}</td>
+                    <td className="p-3">
+                       <div className="flex items-center space-x-2">
+                          <span className="text-yellow-400 font-bold">{user.acronBalance} ACRON</span>
+                          <button 
+                             onClick={() => { setEditingUser(user); setNewBalance(user.acronBalance.toString()); }}
+                             className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-teal-400"
+                          >
+                            Edit
+                          </button>
+                       </div>
+                    </td>
                     <td className="p-3">
                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                         u.tier === 'ultimate' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' :
-                         u.tier === 'proplus' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
+                         user.tier === 'ultimate' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white' :
+                         user.tier === 'proplus' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
                          'bg-gray-600 text-white'
                        }`}>
-                         {u.tier}
+                         {user.tier}
                        </span>
                     </td>
                     <td className="p-3 text-gray-400">
-                      {u.lastPurchase ? new Date(u.lastPurchase).toLocaleDateString() : 'Never'}
-                    </td>
-                    <td className="p-3">
-                      <button 
-                        onClick={() => { setEditingUser(u); setEditBalance(u.acronBalance.toString()); }}
-                        className="px-3 py-1 bg-purple-600/30 border border-purple-500 text-purple-400 rounded hover:bg-purple-600/50 transition text-xs"
-                      >
-                        ✏️ Edit
-                      </button>
+                      {user.lastPurchase ? new Date(user.lastPurchase).toLocaleDateString() : 'Never'}
                     </td>
                   </tr>
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-gray-500">No users found.</td>
+                    <td colSpan={5} className="p-8 text-center text-gray-500">No users found.</td>
                   </tr>
                 )}
              </tbody>
           </table>
         </div>
       </div>
-
-      {/* Edit User Modal */}
+      
+      {/* Edit Balance Modal */}
       {editingUser && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-           <div className="bg-gray-800 rounded-2xl w-full max-w-md p-6 border border-gray-700">
-              <h2 className="text-xl font-bold mb-4 text-white">Edit User: {editingUser.displayName}</h2>
-              <p className="text-sm text-gray-400 mb-4">{editingUser.email}</p>
-              
+           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 w-full max-w-sm">
+              <h3 className="text-lg font-bold mb-4">Edit Balance: {editingUser.displayName}</h3>
               <div className="mb-4">
-                 <label className="block text-sm text-gray-400 mb-1">ACRON Balance</label>
+                 <label className="block text-sm text-gray-400 mb-1">New Balance (ACRON)</label>
                  <input 
                    type="text"
-                   inputMode="numeric"
-                   value={editBalance}
+                   inputMode="decimal"
+                   value={newBalance}
                    onChange={(e) => {
-                     const val = e.target.value;
-                     if (val === '' || /^\d*$/.test(val)) setEditBalance(val);
+                      const val = e.target.value;
+                      if (val === '' || /^\d*\.?\d*$/.test(val)) setNewBalance(val);
                    }}
-                   className="w-full bg-gray-900 border border-gray-600 rounded p-3 text-white text-xl font-mono focus:border-yellow-500 outline-none"
-                   placeholder="0"
+                   className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white outline-none focus:border-teal-500"
                  />
               </div>
-
               <div className="flex justify-end space-x-3">
                  <button 
                    onClick={() => setEditingUser(null)}
@@ -413,10 +399,10 @@ export default function AdminDashboard() {
                    Cancel
                  </button>
                  <button 
-                   onClick={handleSaveBalance}
-                   className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded font-bold transition"
+                   onClick={handleUpdateBalance}
+                   className="px-4 py-2 bg-teal-600 hover:bg-teal-500 rounded font-bold transition"
                  >
-                   Save Balance
+                   Update
                  </button>
               </div>
            </div>

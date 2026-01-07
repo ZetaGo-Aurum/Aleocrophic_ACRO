@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, Timestamp, setDoc } from 'firebase/firestore';
 import { useAuth } from '@/lib/auth-context';
 
 type Broadcast = {
@@ -11,6 +11,7 @@ type Broadcast = {
   target_time: string;
   permanent: boolean;
   created_at: Date;
+  linkDiscount?: boolean; // UI state only
 };
 
 export default function BroadcastManager() {
@@ -78,8 +79,23 @@ export default function BroadcastManager() {
       } else {
         await addDoc(collection(db, 'broadcasts'), data);
       }
-      setIsEditing(false);
-      setCurrentBroadcast({});
+
+      // Link to Global Discount if requested
+      if (currentBroadcast.linkDiscount && !data.permanent && data.target_time) {
+        await setDoc(doc(db, 'config', 'pricing'), {
+          broadcast_target_time: data.target_time, // Update legacy field used by Global Discount
+          discount_linked: true
+        }, { merge: true });
+        alert('Broadcast saved AND linked to Global Discount Timer! 🔗');
+      } else {
+        setIsEditing(false);
+        setCurrentBroadcast({});
+      }
+      
+      if (!currentBroadcast.linkDiscount) {
+         setIsEditing(false);
+         setCurrentBroadcast({});
+      }
     } catch (error) {
       console.error('Error saving broadcast:', error);
       alert('Failed to save broadcast');
@@ -214,6 +230,23 @@ export default function BroadcastManager() {
                          />
                       </div>
                     )}
+
+                     {!currentBroadcast.permanent && currentBroadcast.target_time && (
+                        <div className="pt-2">
+                           <label className="flex items-center space-x-2 cursor-pointer p-3 bg-purple-900/30 rounded border border-purple-500/30">
+                              <input 
+                                type="checkbox"
+                                checked={currentBroadcast.linkDiscount || false}
+                                onChange={(e) => setCurrentBroadcast({...currentBroadcast, linkDiscount: e.target.checked})}
+                                className="rounded bg-gray-900 border-gray-600 text-purple-500"
+                              />
+                              <span className="text-purple-400 font-bold">🔗 Link to Global Discount Timer</span>
+                           </label>
+                           <p className="text-xs text-gray-500 mt-1 ml-1">
+                             This will update the Global Discount countdown to match this broadcast's end time.
+                           </p>
+                        </div>
+                     )}
                  </div>
 
                  <div className="flex justify-end space-x-3 mt-6">
