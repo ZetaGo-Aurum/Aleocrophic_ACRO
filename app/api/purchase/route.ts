@@ -16,9 +16,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`Processing purchase for user ${uid}: ${tier} (${price} ACRON)`);
 
-    // Initialize Firebase Admin
-    const app = getAdminApp();
-    const db = getFirestore(app);
+    // Initialize Firebase Admin (Already done via getAdminDb)
     const userRef = db.collection('users').doc(uid);
 
     // Run transaction to ensure atomic balance deduction

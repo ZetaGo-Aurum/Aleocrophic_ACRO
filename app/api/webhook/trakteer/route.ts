@@ -18,6 +18,8 @@ interface TrakteerWebhookPayload {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getAdminDb(); // Centralized Init
+    
     const payload: TrakteerWebhookPayload = await request.json();
     
     console.log('=== TRAKTEER WEBHOOK RECEIVED ===');
@@ -39,9 +41,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Initialize Firebase Admin
-    const app = getAdminApp();
-    const db = getFirestore(app);
+    // Initialize Firebase Admin (Already initialized)
+
     
     // Find user by email in Firestore
     const usersRef = db.collection('users');
