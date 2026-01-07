@@ -18,7 +18,7 @@ export function useNotification() {
       if (result === 'granted') {
         new Notification('Notifications Enabled', {
            body: 'You will now receive alerts for new broadcasts and updates!',
-           icon: '/favicon.ico'
+           icon: '/acron.png'
         });
       }
     } catch (error) {
@@ -26,7 +26,7 @@ export function useNotification() {
     }
   }, []);
 
-  const sendNotification = useCallback((title: string, body: string, icon: string = '/favicon.ico') => {
+  const sendNotification = useCallback((title: string, body: string, icon: string = '/acron.png') => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
 
     if (Notification.permission === 'granted') {

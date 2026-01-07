@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     description: 'Premium Linux Distribution for Termux',
     type: 'website',
   },
+  icons: {
+    icon: '/acron.png',
+  },
 }
 
 export default function RootLayout({
