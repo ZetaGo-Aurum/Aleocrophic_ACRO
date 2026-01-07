@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import AuthModal from '@/components/AuthModal';
+import InvoiceCard from '@/components/InvoiceCard';
 import Toast from '@/components/Toast';
 
 export default function Home() {
-  const { user, userData, loading } = useAuth();
+  const { user, userData, loading, refreshUserData } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
   const screenshots = [
@@ -24,7 +27,7 @@ export default function Home() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleBuyClick = (tier: 'proplus' | 'ultimate') => {
+  const handleBuyClick = async (tier: 'proplus' | 'ultimate') => {
     if (!user) {
       setShowAuthModal(true);
       return;
@@ -39,9 +42,44 @@ export default function Home() {
     
     // Check if user has enough balance
     if ((userData?.acronBalance || 0) >= requiredAcron) {
-      // TODO: Process purchase with balance
-      showToast(`🎉 Purchasing ${tierName} with ${requiredAcron} ACRON...`, 'success');
-      // In real implementation: call API to deduct balance and generate license
+      try {
+        // Show processing toast (keep it visible longer or until success)
+        showToast(`Processing purchase for ${tierName}...`, 'warning');
+        
+        const response = await fetch('/api/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: user.uid,
+            tier,
+            tierName,
+            price: requiredAcron
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          await refreshUserData(); // Refresh balance and licenses
+          showToast(`🎉 Purchase Successful! ${tierName} unlocked.`, 'success');
+          
+          // Show Invoice
+          setInvoiceData({
+            tierName: result.data.license.tierName,
+            price: requiredAcron,
+            transactionId: result.data.license.transactionId,
+            licenseKey: result.data.license.key,
+            date: result.data.license.createdAt,
+            newBalance: result.data.newBalance
+          });
+          setShowInvoice(true);
+        } else {
+          showToast(`❌ Purchase failed: ${result.error}`, 'error');
+        }
+      } catch (error) {
+        console.error(error);
+        showToast('❌ Network error during purchase', 'error');
+      }
     } else {
       // Not enough balance - redirect to Trakteer
       showToast(`❌ ACRON tidak cukup! Perlu ${requiredAcron} ACRON untuk ${tierName}`, 'error');
@@ -58,6 +96,13 @@ export default function Home() {
       
       {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      
+      {/* Invoice Card */}
+      <InvoiceCard 
+        isOpen={showInvoice} 
+        onClose={() => setShowInvoice(false)} 
+        data={invoiceData}
+      />
 
       {/* Navigation */}
       <nav className="nav-glass">
