@@ -163,7 +163,13 @@ export default function BroadcastManager() {
              {permission === 'default' && (
                 <button onClick={requestPermission} className="bg-blue-600 px-3 py-2 rounded text-sm mr-2">Enable Notifications</button>
              )}
-             <button onClick={() => sendNotification('🔔 Test', 'This is a test notification!')} className="bg-gray-700 px-3 py-2 rounded text-sm">
+             <button 
+               onClick={() => {
+                 const sent = sendNotification('🔔 Test', 'This is a test notification!');
+                 if (!sent) alert('Failed to send notification. Please Enable Alerts or check your browser settings.');
+               }} 
+               className="bg-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-600 transition"
+             >
                 Test Notify
              </button>
           </div>

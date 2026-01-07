@@ -2,11 +2,12 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -30,8 +31,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col md:flex-row">
       {/* Mobile Header */}
-      <div className="md:hidden bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
-         <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500">ACRO Admin</span>
+      <div className="md:hidden bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center sticky top-0 z-40">
+         <div className="flex items-center space-x-3">
+            <button onClick={() => setIsSidebarOpen(true)} className="text-white text-2xl">☰</button>
+            <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500">ACRO Admin</span>
+         </div>
          <div className="flex space-x-4">
             <a href="https://trakteer.id/manage/balance" target="_blank" className="text-sm text-yellow-400 border border-yellow-400 px-2 py-1 rounded">
                Trakteer
@@ -40,11 +44,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
          </div>
       </div>
 
-      {/* Sidebar (Desktop) */}
-      <aside className="w-64 bg-gray-800 p-6 hidden md:block border-r border-gray-700 h-screen sticky top-0">
-        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 mb-8">
-          ACRO Admin
-        </h1>
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`w-64 bg-gray-800 p-6 border-r border-gray-700 h-screen fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500">
+              ACRO Admin
+            </h1>
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-gray-400 hover:text-white">✕</button>
+        </div>
         <nav className="space-y-4">
           <a href="/admin" className="block py-2 px-4 rounded hover:bg-gray-700 text-gray-300 hover:text-white transition">
             📊 Dashboard

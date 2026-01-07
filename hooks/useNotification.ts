@@ -32,13 +32,24 @@ export function useNotification() {
   }, []);
 
   const sendNotification = useCallback((title: string, body: string, icon: string = '/acron.png') => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (typeof window === 'undefined') return false;
+    
+    if (!('Notification' in window)) {
+        console.warn('This browser does not support desktop notification');
+        return false;
+    }
 
     if (Notification.permission === 'granted') {
-      new Notification(title, { body, icon });
-    } else if (Notification.permission !== 'denied') {
-      // Try requesting again if default (though modern browsers block this unless user gesture)
-      // Best to rely on manual request first
+      try {
+        new Notification(title, { body, icon });
+        return true;
+      } catch (e) {
+        console.error('Notification creation failed', e);
+        return false;
+      }
+    } else {
+       console.warn('Notification permission not granted');
+       return false;
     }
   }, []);
 

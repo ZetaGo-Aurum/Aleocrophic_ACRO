@@ -242,12 +242,22 @@ export default function Home() {
             >
               <span className="mr-3">🖥️</span> ACRO OS
             </button>
+
             <button 
               onClick={() => { setActiveTab('store'); setIsSidebarOpen(false); }} 
               className={`flex items-center w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'store' ? 'bg-teal-500/20 text-teal-400 border border-teal-500/50' : 'text-gray-300 hover:bg-gray-800'}`}
             >
               <span className="mr-3">🛍️</span> Official Store
             </button>
+
+            {permission === 'default' && (
+               <button 
+                 onClick={() => { requestPermission(); setIsSidebarOpen(false); }}
+                 className="flex items-center w-full px-4 py-3 rounded-xl text-teal-400 hover:bg-gray-800 transition border border-teal-500/30 mt-2"
+               >
+                 <span className="mr-3">🔔</span> Enable Alerts
+               </button>
+            )}
             
             <div className="h-px bg-gray-700/50 my-4"></div>
             
@@ -284,7 +294,7 @@ export default function Home() {
           {permission === 'default' && (
              <button 
                onClick={requestPermission}
-               className="text-xs bg-teal-500/20 text-teal-400 border border-teal-500/50 px-3 py-1 rounded-full animate-pulse hover:bg-teal-500/40 transition"
+               className="hidden md:block text-xs bg-teal-500/20 text-teal-400 border border-teal-500/50 px-3 py-1 rounded-full animate-pulse hover:bg-teal-500/40 transition"
              >
                🔔 Enable Alerts
              </button>
