@@ -125,7 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUserPhoto = async (photoURL: string) => {
     if (!user) return;
-    await updateProfile(user, { photoURL: photoURL });
+    // Only update Firestore - Firebase Auth rejects long base64 URLs
+    // photoURL stored in Firestore can be base64 or URL
     await updateDoc(doc(db, 'users', user.uid), { photoURL: photoURL });
     await refreshUserData();
   };

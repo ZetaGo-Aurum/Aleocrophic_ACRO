@@ -76,19 +76,55 @@ export default function ProfilePage() {
 
     setUploadingPhoto(true);
     try {
-      // Convert to base64 for storage (simplified - in production use Firebase Storage)
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        await updateUserPhoto(base64);
-        showToast('✓ Profile photo updated!', 'success');
-        setUploadingPhoto(false);
+      // Compress and resize image
+      const compressImage = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const maxSize = 200; // Max width/height
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > height) {
+                if (width > maxSize) {
+                  height *= maxSize / width;
+                  width = maxSize;
+                }
+              } else {
+                if (height > maxSize) {
+                  width *= maxSize / height;
+                  height = maxSize;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx?.drawImage(img, 0, 0, width, height);
+              
+              // Convert to JPEG with 70% quality for smaller size
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+              resolve(compressedBase64);
+            };
+            img.onerror = reject;
+            img.src = e.target?.result as string;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       };
-      reader.readAsDataURL(file);
+
+      const compressedPhoto = await compressImage(file);
+      await updateUserPhoto(compressedPhoto);
+      showToast('✓ Profile photo updated!', 'success');
     } catch (error) {
+      console.error('Photo upload error:', error);
       showToast('Failed to upload photo', 'error');
-      setUploadingPhoto(false);
     }
+    setUploadingPhoto(false);
   };
 
   const copyLicenseKey = (key: string) => {
