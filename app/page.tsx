@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import AuthModal from '@/components/AuthModal';
 import InvoiceCard from '@/components/InvoiceCard';
 import Toast from '@/components/Toast';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export default function Home() {
   const { user, userData, loading, refreshUserData } = useAuth();
@@ -12,6 +14,42 @@ export default function Home() {
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceData, setInvoiceData] = useState<any>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+  const [pricingConfig, setPricingConfig] = useState<any>(null);
+
+  // Fetch Pricing Config
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'config', 'pricing'), (docSnap) => {
+      if (docSnap.exists()) {
+        setPricingConfig(docSnap.data());
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const getPriceDetails = (tier: string, baseAcron: number, baseRp: number) => {
+    if (pricingConfig?.discount_active && pricingConfig?.discount_tiers?.includes(tier)) {
+        const percent = pricingConfig.discount_percent || 0;
+        const discountAcron = baseAcron * ((100 - percent) / 100);
+        const discountRp = baseRp * ((100 - percent) / 100);
+        return {
+            acron: Number(discountAcron.toFixed(2)),
+            rp: discountRp.toLocaleString('id-ID'),
+            originalRp: baseRp.toLocaleString('id-ID'),
+            isDiscounted: true,
+            percent: percent
+        };
+    }
+    return {
+        acron: baseAcron,
+        rp: baseRp.toLocaleString('id-ID'),
+        originalRp: null,
+        isDiscounted: false,
+        percent: 0
+    };
+  };
+
+  const proPrice = getPriceDetails('proplus', 1, 62500);
+  const ultPrice = getPriceDetails('ultimate', 2, 125000);
 
   const screenshots = [
     { src: '/screenshots/screenshot_blender.jpg', alt: 'Blender 3D Modeling', caption: 'Blender 4.3.2 - 3D Modeling & Animation' },
@@ -37,7 +75,8 @@ export default function Home() {
       return;
     }
 
-    const requiredAcron = tier === 'proplus' ? 1 : 2;
+    const priceDetails = tier === 'proplus' ? proPrice : ultPrice;
+    const requiredAcron = priceDetails.acron;
     const tierName = tier === 'proplus' ? 'PRO+' : 'ULTIMATE';
     
     // Check if user has enough balance
@@ -53,7 +92,7 @@ export default function Home() {
             uid: user.uid,
             tier,
             tierName,
-            price: requiredAcron
+            // API handles validation, we just send tier/uid. Price ignored by secure API.
           })
         });
 
@@ -84,7 +123,7 @@ export default function Home() {
       // Not enough balance - redirect to Trakteer
       showToast(`❌ ACRON tidak cukup! Perlu ${requiredAcron} ACRON untuk ${tierName}`, 'error');
       setTimeout(() => {
-        window.open(`https://trakteer.id/Aleocrophic/tip?quantity=${requiredAcron}`, '_blank');
+        window.open(`https://trakteer.id/Aleocrophic/tip?quantity=${Math.ceil(requiredAcron)}`, '_blank');
       }, 1500);
     }
   };
@@ -258,19 +297,33 @@ export default function Home() {
             </div>
 
             {/* PRO+ Tier */}
-            <div className="pricing-card tier-proplus">
+            <div className={`pricing-card tier-proplus ${proPrice.isDiscounted ? 'border-yellow-500' : ''}`}>
+              {proPrice.isDiscounted && (
+                 <div className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                    DISCOUNT {proPrice.percent}%
+                 </div>
+              )}
               <div className="tier-popular-badge">POPULAR</div>
               <div className="pricing-header">
                 <span className="tier-badge tier-badge-proplus">ADD-ON</span>
                 <h3 className="tier-name">⭐ PRO+</h3>
                 <p className="tier-desc">Gaming & Theme Pack</p>
-                <div className="tier-price">
-                  <span className="price-currency">Rp</span>
-                  <span className="price-value">62.500</span>
+                
+                <div className="tier-price flex flex-col items-center">
+                    {proPrice.isDiscounted && (
+                       <span className="text-gray-500 line-through text-sm">Rp {proPrice.originalRp}</span>
+                    )}
+                  <div className="flex items-center">
+                      <span className="price-currency">Rp</span>
+                      <span className={`price-value ${proPrice.isDiscounted ? 'text-yellow-400' : ''}`}>
+                          {proPrice.rp}
+                      </span>
+                  </div>
                 </div>
-                <div className="acron-display">
+
+                <div className="acron-display mt-2">
                   <img src="/acron.png" alt="ACRON" />
-                  <span>= 1 ACRON</span>
+                  <span>= {proPrice.acron} ACRON</span>
                 </div>
               </div>
               
@@ -292,25 +345,39 @@ export default function Home() {
                 onClick={() => handleBuyClick('proplus')}
                 className="btn btn-primary btn-block"
               >
-                🛒 Buy with 1 ACRON
+                🛒 Buy with {proPrice.acron} ACRON
               </button>
             </div>
 
             {/* ULTIMATE Tier */}
-            <div className="pricing-card tier-ultimate">
+            <div className={`pricing-card tier-ultimate ${ultPrice.isDiscounted ? 'border-yellow-500' : ''}`}>
+              {ultPrice.isDiscounted && (
+                 <div className="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                    DISCOUNT {ultPrice.percent}%
+                 </div>
+              )}
               <div className="tier-best-badge">BEST VALUE</div>
               <div className="pricing-header">
                 <span className="tier-badge tier-badge-ultimate">FULL PACK</span>
                 <h3 className="tier-name">🏆 ULTIMATE</h3>
                 <p className="tier-desc">Everything Included</p>
-                <div className="tier-price">
-                  <span className="price-currency">Rp</span>
-                  <span className="price-value">125.000</span>
+                
+                <div className="tier-price flex flex-col items-center">
+                    {ultPrice.isDiscounted && (
+                       <span className="text-gray-500 line-through text-sm">Rp {ultPrice.originalRp}</span>
+                    )}
+                  <div className="flex items-center">
+                      <span className="price-currency">Rp</span>
+                      <span className={`price-value ${ultPrice.isDiscounted ? 'text-yellow-400' : ''}`}>
+                          {ultPrice.rp}
+                      </span>
+                  </div>
                 </div>
-                <div className="acron-display">
+
+                <div className="acron-display mt-2">
                   <img src="/acron.png" alt="ACRON" />
                   <img src="/acron.png" alt="ACRON" />
-                  <span>= 2 ACRON</span>
+                  <span>= {ultPrice.acron} ACRON</span>
                 </div>
               </div>
               
@@ -333,7 +400,7 @@ export default function Home() {
                 onClick={() => handleBuyClick('ultimate')}
                 className="btn btn-gold btn-block"
               >
-                🛒 Buy with 2 ACRON
+                🛒 Buy with {ultPrice.acron} ACRON
               </button>
             </div>
           </div>
