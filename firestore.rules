@@ -2,24 +2,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // User Profile Rules
-    // Combined security for ACRO (protects balance) and User's other apps (allows other updates)
-    match /users/{userId} {
-      allow read, create: if request.auth != null && request.auth.uid == userId;
-      
-      // Update Rule: User can update their data, BUT CANNOT touch sensitive ACRO fields.
-      // This allows your "Other Web" to work while keeping ACRO secure.
-      allow update: if request.auth != null && request.auth.uid == userId
-                    && !request.resource.data.diff(resource.data).affectedKeys()
-                        .hasAny(['acronBalance', 'licenses', 'isPro', 'tier', 'lastPurchase']);
-    }
-    
-    // License Collection Rules (ACRO Server Only)
-    match /licenses/{licenseKey} {
-      allow read, write: if false;
+    // Helper Function: Check if user is the Owner
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'deltaastra24@gmail.com';
     }
 
-    // Rules for 'posts' (Requested by User)
+    // Pricing Configuration (Public Read, Admin Write)
+    match /config/pricing {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // User Profile Rules
+    match /users/{userId} {
+      // User can read their own profile. Admin can read ANY profile.
+      allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      
+      // User can create their own profile.
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // User update rules (Restricted). Admin can update ANYTHING.
+      allow update: if isAdmin() || (
+                    request.auth != null && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                        .hasAny(['acronBalance', 'licenses', 'isPro', 'tier', 'lastPurchase'])
+                    );
+    }
+    
+    // License Collection Rules (ACRO Server Only or Admin)
+    match /licenses/{licenseKey} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-side admin SDK only
+    }
+
+    // Rules for 'posts'
     match /posts/{postId} {
       allow read: if request.auth != null;
       

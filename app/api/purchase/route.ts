@@ -5,18 +5,49 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getAdminDb(); // Centralized Init (Throws clear error if env missing)
+    const db = getAdminDb(); // Centralized Init
     
     const body = await request.json();
-    const { uid, tier, tierName, price } = body;
+    const { uid, tier, tierName } = body; // Price argument is IGNORED for security
 
-    if (!uid || !tier || !price) {
+    if (!uid || !tier) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
-    console.log(`Processing purchase for user ${uid}: ${tier} (${price} ACRON)`);
+    console.log(`Processing purchase for user ${uid}, tier: ${tier}`);
 
-    // Initialize Firebase Admin (Already done via getAdminDb)
+    // Fetch Security & Pricing Config
+    const pricingRef = db.collection('config').doc('pricing');
+    const pricingDoc = await pricingRef.get();
+    
+    let Config = {
+      proplus_price: 1,
+      ultimate_price: 2,
+      discount_active: false,
+      discount_percent: 0,
+      discount_tiers: [] as string[]
+    };
+
+    if (pricingDoc.exists) {
+      const data = pricingDoc.data();
+      if (data) {
+        Config = { ...Config, ...data };
+      }
+    }
+
+    // Calculate Final Price Server-Side
+    let basePrice = (tier === 'ultimate') ? Config.ultimate_price : Config.proplus_price;
+    let finalPrice = basePrice;
+    let discountApplied = false;
+
+    if (Config.discount_active && Config.discount_tiers.includes(tier)) {
+      const discountAmount = basePrice * (Config.discount_percent / 100);
+      finalPrice = Math.max(0, basePrice - discountAmount); // Prevent negative price
+      discountApplied = true;
+    }
+
+    console.log(`Price Calculation: Base=${basePrice}, Discount=${discountApplied ? Config.discount_percent + '%' : 'None'}, Final=${finalPrice}`);
+
     const userRef = db.collection('users').doc(uid);
 
     // Run transaction to ensure atomic balance deduction
