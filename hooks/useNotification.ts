@@ -34,6 +34,9 @@ export function useNotification() {
   const sendNotification = useCallback((title: string, body: string, icon: string = '/acron.png') => {
     if (typeof window === 'undefined') return false;
     
+    // Construct absolute URL for icon (required for some browsers/OS)
+    const iconUrl = icon.startsWith('http') ? icon : `${window.location.origin}${icon}`;
+
     if (!('Notification' in window)) {
         console.warn('This browser does not support desktop notification');
         return false;
@@ -41,7 +44,7 @@ export function useNotification() {
 
     if (Notification.permission === 'granted') {
       try {
-        new Notification(title, { body, icon });
+        new Notification(title, { body, icon: iconUrl });
         return true;
       } catch (e) {
         console.error('Notification creation failed', e);

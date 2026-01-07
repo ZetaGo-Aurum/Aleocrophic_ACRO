@@ -29,6 +29,28 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              const originalConsoleError = console.error;
+              console.error = (...args) => {
+                if (args[0] && typeof args[0] === 'string' && (args[0].includes('Extension context invalidated') || args[0].includes('message port closed'))) return;
+                originalConsoleError.apply(console, args);
+              };
+              window.addEventListener('error', (event) => {
+                 if (event.message && (event.message.includes('Extension context invalidated') || event.message.includes('message port closed'))) {
+                   event.preventDefault();
+                   event.stopPropagation();
+                 }
+              });
+              window.addEventListener('unhandledrejection', (event) => {
+                 if (event.reason && event.reason.message && (event.reason.message.includes('Extension context invalidated') || event.reason.message.includes('message port closed'))) {
+                   event.preventDefault();
+                 }
+              });
+            `,
+          }}
+        />
       </head>
       <body>
         <AuthProvider>

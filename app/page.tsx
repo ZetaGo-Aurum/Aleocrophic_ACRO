@@ -312,7 +312,7 @@ export default function Home() {
           ) : user ? (
             <div className="nav-user flex items-center">
               {/* Balance */}
-              <div className="nav-balance">
+              <div className="nav-balance hidden md:flex">
                 <span className="balance-icon">🪙</span>
                 <span className="balance-value">{formatBalance(userData?.acronBalance || 0)}</span>
               </div>
