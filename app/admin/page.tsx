@@ -15,6 +15,9 @@ type PricingConfig = {
   broadcast_message?: string;
   broadcast_duration?: number;
   broadcast_permanent?: boolean;
+  broadcast_target_time?: string; // ISO String for Countdown
+  broadcast_auto_expire?: boolean;
+  discount_linked?: boolean;
 };
 
 type UserData = {
@@ -203,39 +206,52 @@ export default function AdminDashboard() {
                    </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Applicable Tiers</label>
-                  <div className="flex space-x-4">
-                    <label className="flex items-center space-x-2">
-                       <input 
-                         type="checkbox"
-                         checked={config?.discount_tiers.includes('proplus') ?? false}
-                         onChange={(e) => {
-                            if (!config) return;
-                            const tiers = e.target.checked 
-                              ? [...config.discount_tiers, 'proplus']
-                              : config.discount_tiers.filter(t => t !== 'proplus');
-                            setConfig({...config, discount_tiers: tiers});
-                         }}
-                         className="rounded bg-gray-900 border-gray-600 text-teal-500"
-                       />
-                       <span>PRO+</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                       <input 
-                         type="checkbox"
-                         checked={config?.discount_tiers.includes('ultimate') ?? false}
-                         onChange={(e) => {
-                            if (!config) return;
-                            const tiers = e.target.checked 
-                              ? [...config.discount_tiers, 'ultimate']
-                              : config.discount_tiers.filter(t => t !== 'ultimate');
-                            setConfig({...config, discount_tiers: tiers});
-                         }}
-                         className="rounded bg-gray-900 border-gray-600 text-teal-500"
-                       />
-                       <span>ULTIMATE</span>
-                    </label>
-                  </div>
+                   <label className="block text-sm text-gray-400 mb-1">Applicable Tiers</label>
+                   <div className="flex space-x-4">
+                     <label className="flex items-center space-x-2">
+                        <input 
+                          type="checkbox"
+                          checked={config?.discount_tiers.includes('proplus') ?? false}
+                          onChange={(e) => {
+                             if (!config) return;
+                             const tiers = e.target.checked 
+                               ? [...config.discount_tiers, 'proplus']
+                               : config.discount_tiers.filter(t => t !== 'proplus');
+                             setConfig({...config, discount_tiers: tiers});
+                          }}
+                          className="rounded bg-gray-900 border-gray-600 text-teal-500"
+                        />
+                        <span>PRO+</span>
+                     </label>
+                     <label className="flex items-center space-x-2">
+                        <input 
+                          type="checkbox"
+                          checked={config?.discount_tiers.includes('ultimate') ?? false}
+                          onChange={(e) => {
+                             if (!config) return;
+                             const tiers = e.target.checked 
+                               ? [...config.discount_tiers, 'ultimate']
+                               : config.discount_tiers.filter(t => t !== 'ultimate');
+                             setConfig({...config, discount_tiers: tiers});
+                          }}
+                          className="rounded bg-gray-900 border-gray-600 text-teal-500"
+                        />
+                        <span>ULTIMATE</span>
+                     </label>
+                   </div>
+                   
+                   {/* Discount Linkage */}
+                   <div className="mt-4 pt-4 border-t border-gray-700">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                         <input 
+                           type="checkbox"
+                           checked={config?.discount_linked ?? false}
+                           onChange={(e) => setConfig(prev => prev ? {...prev, discount_linked: e.target.checked} : null)}
+                           className="form-checkbox text-purple-500 rounded bg-gray-900 border-gray-600"
+                         />
+                         <span className="text-sm text-purple-400">Link Discount to Broadcast Countdown 🔗</span>
+                      </label>
+                   </div>
                 </div>
              </div>
           </div>
@@ -273,33 +289,45 @@ export default function AdminDashboard() {
               </div>
               <div className="space-y-4">
                  <div>
-                    <label className="block text-sm text-gray-400 mb-1">Duration</label>
-                    <div className="flex items-center space-x-4">
+                    <label className="block text-sm text-gray-400 mb-1">Duration Type</label>
+                    <div className="flex flex-col space-y-2">
                         <label className="flex items-center space-x-2">
                             <input 
                               type="radio"
                               name="duration"
                               checked={config?.broadcast_permanent === true}
-                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: true} : null)}
+                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: true, broadcast_target_time: undefined} : null)}
                               className="text-yellow-500 bg-gray-900 border-gray-600"
                             />
-                            <span>Permanent</span>
+                            <span>Permanent (Always Show)</span>
                         </label>
                         <label className="flex items-center space-x-2">
                             <input 
                               type="radio"
                               name="duration"
-                              checked={config?.broadcast_permanent === false}
-                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: false} : null)}
+                              checked={config?.broadcast_permanent === false && !config?.broadcast_target_time}
+                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: false, broadcast_target_time: undefined} : null)}
                               className="text-yellow-500 bg-gray-900 border-gray-600"
                             />
                             <span>Timed (Seconds)</span>
                         </label>
+                        <label className="flex items-center space-x-2">
+                            <input 
+                              type="radio"
+                              name="duration"
+                              checked={!!config?.broadcast_target_time}
+                              onChange={() => setConfig(prev => prev ? {...prev, broadcast_permanent: false, broadcast_target_time: new Date().toISOString().slice(0, 16)} : null)}
+                              className="text-yellow-500 bg-gray-900 border-gray-600"
+                            />
+                            <span>Countdown (Target Date) ⏳</span>
+                        </label>
                     </div>
                  </div>
                  
-                 {!config?.broadcast_permanent && (
+                 {/* Timed Config */}
+                 {config?.broadcast_permanent === false && !config?.broadcast_target_time && (
                    <div>
+                      <label className="block text-sm text-gray-400 mb-1">Seconds to Show</label>
                       <input 
                         type="number"
                         min="1"
@@ -307,7 +335,31 @@ export default function AdminDashboard() {
                         onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_duration: parseInt(e.target.value) || 5} : null)}
                         className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
                         placeholder="Seconds"
-                      />
+                     />
+                   </div>
+                 )}
+
+                 {/* Countdown Config */}
+                 {!!config?.broadcast_target_time && (
+                   <div className="space-y-3 p-3 bg-gray-800 rounded border border-gray-700">
+                      <div>
+                         <label className="block text-sm text-gray-400 mb-1">Target Date & Time</label>
+                         <input 
+                            type="datetime-local"
+                            value={config.broadcast_target_time}
+                            onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_target_time: e.target.value} : null)}
+                            className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+                         />
+                      </div>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                         <input 
+                           type="checkbox" 
+                           checked={config?.broadcast_auto_expire ?? false}
+                           onChange={(e) => setConfig(prev => prev ? {...prev, broadcast_auto_expire: e.target.checked} : null)}
+                           className="form-checkbox text-red-500 rounded bg-gray-900 border-gray-600"
+                         />
+                         <span className="text-xs text-gray-300">Auto-Expire (Hide when done)</span>
+                      </label>
                    </div>
                  )}
               </div>

@@ -6,7 +6,7 @@ import AuthModal from '@/components/AuthModal';
 import InvoiceCard from '@/components/InvoiceCard';
 import Toast from '@/components/Toast';
 import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 
 export default function Home() {
   const { user, userData, loading, refreshUserData } = useAuth();
@@ -15,6 +15,7 @@ export default function Home() {
   const [invoiceData, setInvoiceData] = useState<any>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
   const [pricingConfig, setPricingConfig] = useState<any>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Fetch Pricing Config
   useEffect(() => {
@@ -24,6 +25,16 @@ export default function Home() {
       }
     });
     return () => unsub();
+  }, []);
+
+  // Fetch Products
+  const [products, setProducts] = useState<any[]>([]);
+  useEffect(() => {
+     const q = query(collection(db, 'products'), orderBy('name'));
+     const unsub = onSnapshot(q, col => {
+        setProducts(col.docs.map(d => ({id: d.id, ...d.data()})));
+     });
+     return () => unsub();
   }, []);
 
   const getPriceDetails = (tier: string, baseAcron: number, baseRp: number) => {
@@ -68,6 +79,33 @@ export default function Home() {
         setShowBroadcast(false);
     }
   }, [pricingConfig]);
+
+  // Countdown Logic
+  const [countdown, setCountdown] = useState<string>('');
+  useEffect(() => {
+    if (showBroadcast && pricingConfig?.broadcast_target_time) {
+       const interval = setInterval(() => {
+          const target = new Date(pricingConfig.broadcast_target_time).getTime();
+          const now = new Date().getTime();
+          const dist = target - now;
+
+          if (dist < 0) {
+             setCountdown('EXPIRED');
+             if (pricingConfig.broadcast_auto_expire) {
+                setShowBroadcast(false);
+             }
+             clearInterval(interval);
+          } else {
+             const days = Math.floor(dist / (1000 * 60 * 60 * 24));
+             const hours = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+             const minutes = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+             const seconds = Math.floor((dist % (1000 * 60)) / 1000);
+             setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+          }
+       }, 1000);
+       return () => clearInterval(interval);
+    }
+  }, [showBroadcast, pricingConfig]);
 
   const screenshots = [
     { src: '/screenshots/screenshot_blender.jpg', alt: 'Blender 3D Modeling', caption: 'Blender 4.3.2 - 3D Modeling & Animation' },
@@ -148,18 +186,48 @@ export default function Home() {
 
   return (
     <main>
-      {/* Navigation */}
+      {/* Mobile Sidebar (Hamburger) */}
+      <div className={`md:hidden fixed z-[60] top-0 left-0 w-64 h-full bg-gray-900 border-r border-gray-700 transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+         <div className="p-4 flex justify-between items-center border-b border-gray-700">
+            <span className="text-xl font-bold gradient-text">ACRON Store</span>
+            <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 hover:text-white">✕</button>
+         </div>
+         <div className="p-4 space-y-4">
+            <a href="#pricing" onClick={() => setIsSidebarOpen(false)} className="block text-gray-300 hover:text-white">Pricing</a>
+            <a href="#products" onClick={() => setIsSidebarOpen(false)} className="block text-gray-300 hover:text-white">More Products</a>
+            <a href="#gallery" onClick={() => setIsSidebarOpen(false)} className="block text-gray-300 hover:text-white">Gallery</a>
+            {user ? (
+               <div className="pt-4 border-t border-gray-700">
+                  <div className="flex items-center space-x-3 mb-4">
+                     {userData?.photoURL && <img src={userData.photoURL} alt="User" className="w-8 h-8 rounded-full" />}
+                     <span className="text-sm font-bold text-white">{userData?.displayName}</span>
+                  </div>
+                  <div className="text-yellow-500 mb-4">Balance: {userData?.acronBalance} ACRON</div>
+                  <a href="/profile" className="block text-center w-full bg-gray-800 py-2 rounded text-sm mb-2">My Profile</a>
+               </div>
+            ) : (
+               <button onClick={() => { setIsSidebarOpen(false); setShowAuthModal(true); }} className="w-full bg-teal-600 py-2 rounded text-white font-bold">Sign In</button>
+            )}
+         </div>
+      </div>
+      
+      {/* Overlay */}
+      {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-[50] md:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
+
+      {/* Navigation (Desktop & Mobile Header) */}
       <nav 
-        className="nav-glass transition-all duration-300 top-0 h-[68px] flex items-center"
+        className="nav-glass transition-all duration-300 top-0 h-[68px] flex items-center justify-between"
         style={{ marginTop: 0 }}
       >
-        <div className="nav-brand flex items-center h-full">
+        <div className="nav-brand flex items-center h-full pl-4">
+          <button className="md:hidden text-white mr-4 text-2xl" onClick={() => setIsSidebarOpen(true)}>☰</button>
           <img src="/acron.png" alt="ACRON" className="nav-logo h-10 w-auto" />
-          <span className="nav-title gradient-text ml-2">ACRO</span>
+          <span className="nav-title gradient-text ml-2">ACRON</span>
         </div>
         
-        <div className="nav-menu flex items-center h-full">
+        <div className="nav-menu flex items-center h-full pr-4 hidden md:flex">
           <a href="#pricing" className="nav-link">Pricing</a>
+          <a href="#products" className="nav-link">Store</a>
           <a href="#gallery" className="nav-link">Gallery</a>
           
           {loading ? (
@@ -198,7 +266,8 @@ export default function Home() {
                <div className="flex items-center space-x-3 overflow-hidden">
                   <span className="text-xl animate-pulse">📢</span>
                   <p className="font-bold text-sm md:text-base drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
-                     {pricingConfig.broadcast_message}
+                     {pricingConfig.broadcast_message} 
+                     {pricingConfig.broadcast_target_time && <span className="ml-2 text-yellow-300 font-mono">[{countdown}]</span>}
                   </p>
                </div>
                {!pricingConfig.broadcast_permanent && (
@@ -532,6 +601,54 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Store Section (New) */}
+      <section id="products" className="py-20 bg-gray-900 relative">
+         <div className="container mx-auto px-6 relative z-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text" data-aos="fade-up">
+               Official Store
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+               {products.map((product) => (
+                  <div key={product.id} className={`bg-gray-800 rounded-2xl p-6 border ${product.highlight ? 'border-yellow-500 shadow-yellow-500/20 shadow-lg' : 'border-gray-700'} hover:scale-105 transition duration-300`}>
+                     {product.highlight && <div className="text-yellow-400 text-xs font-bold mb-2 uppercase tracking-wide">⭐ Featured</div>}
+                     <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-2xl font-bold text-white">{product.name}</h3>
+                        <span className="bg-gray-700 px-3 py-1 rounded-full text-yellow-400 font-mono font-bold">
+                           {product.price} ACRON
+                        </span>
+                     </div>
+                     <p className="text-gray-400 mb-6 min-h-[3rem]">{product.description}</p>
+                     
+                     <div className="space-y-3">
+                        {product.imageUrl && <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-lg mb-4" />}
+                        
+                        {product.fileUrl ? (
+                           <a 
+                             href={product.fileUrl} 
+                             target="_blank"
+                             className="block w-full text-center py-3 rounded-xl bg-gradient-to-r from-teal-500 to-blue-600 text-white font-bold hover:shadow-lg hover:shadow-teal-500/30 transition transform active:scale-95"
+                           >
+                             Download Now ⬇️
+                           </a>
+                        ) : (
+                           <button disabled className="block w-full text-center py-3 rounded-xl bg-gray-700 text-gray-400 font-bold cursor-not-allowed">
+                             Unavailable
+                           </button>
+                        )}
+                     </div>
+                  </div>
+               ))}
+               
+               {products.length === 0 && (
+                  <div className="col-span-3 text-center text-gray-500 py-12">
+                     <p>Coming Soon...</p>
+                  </div>
+               )}
+            </div>
+         </div>
       </section>
 
       {/* Footer */}

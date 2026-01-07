@@ -35,6 +35,12 @@ service cloud.firestore {
       allow write: if false; // Server-side admin SDK only
     }
 
+    // Products Rules (Public Read, Admin Write)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Rules for 'posts'
     match /posts/{postId} {
       allow read: if request.auth != null;
