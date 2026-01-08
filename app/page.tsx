@@ -507,11 +507,11 @@ export default function Home() {
               
               <ul className="feature-list">
                 <li>🎮 GPU Gaming Optimization</li>
-                <li>🕹️ 10+ Gaming Emulators</li>
-                <li>🎨 15+ Premium Themes</li>
-                <li>⚡ Performance Tools</li>
+                <li>🕹️ 8 Proot-Compatible Emulators</li>
+                <li>🍷 Wine Gaming (x86 Games on ARM)</li>
+                <li>🎨 15+ Premium Dark Themes</li>
+                <li>⚡ Performance & RAM Optimizer</li>
                 <li>📺 OBS Streaming Ready</li>
-                <li>🎮 Steam for proot</li>
                 <li>📞 Email Support (24h)</li>
               </ul>
               
@@ -560,14 +560,14 @@ export default function Home() {
               </div>
               
               <ul className="feature-list">
-                <li>✨ All PRO+ Features</li>
-                <li>🔐 Full Pentest Suite</li>
-                <li>🛡️ Privacy & Tor Tools</li>
-                <li>💻 Developer Pro Pack</li>
-                <li>🎬 Content Creator Bundle</li>
-                <li>🔧 Forensics & RE Tools</li>
-                <li>👑 VIP Support (6h)</li>
-                <li>♾️ Lifetime Updates</li>
+                <li>✨ All PRO+ Features Included</li>
+                <li>🖥️ XFCE or GNOME Desktop Choice</li>
+                <li>🔓 100+ Hacking Tools (nmap, sqlmap, metasploit)</li>
+                <li>🛡️ Privacy Suite (Tor, ProxyChains)</li>
+                <li>💻 Developer Pro Pack (Docker, Cloud CLI)</li>
+                <li>🎬 Content Creator Bundle (Kdenlive, OBS)</li>
+                <li>🔧 Forensics & Reverse Engineering</li>
+                <li>👑 VIP Support (6h) + Lifetime Updates</li>
               </ul>
               
               <div className="addon-notice addon-notice-gold">
