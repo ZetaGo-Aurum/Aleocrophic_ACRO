@@ -46,11 +46,19 @@ export async function POST(request: NextRequest) {
     console.log('Raw payload fields:', Object.keys(payload));
     
     if (!supporterEmail) {
-      console.error('No supporter email provided');
+      console.log('⚠️ No email in payload - This might be a TEST webhook');
+      console.log('Full payload for debugging:', JSON.stringify(payload, null, 2));
+      
+      // Return success for test webhooks - Trakteer test button doesn't include email
       return NextResponse.json({
-        success: false,
-        error: 'No email provided in webhook'
-      }, { status: 400 });
+        success: true,
+        message: 'Webhook received (no email provided - test mode detected)',
+        debug: {
+          receivedFields: Object.keys(payload),
+          supporterName,
+          quantity: acronCount
+        }
+      });
     }
     
     // Initialize Firebase Admin (Already initialized)
