@@ -25,13 +25,25 @@ export async function POST(request: NextRequest) {
     console.log('=== TRAKTEER WEBHOOK RECEIVED ===');
     console.log('Payload:', JSON.stringify(payload, null, 2));
     
-    // Extract data from payload
+    // Extract data from payload - Check multiple possible field names
     const acronCount = payload.quantity || 1;
     const supporterName = payload.supporter_name || 'Anonymous';
-    const supporterEmail = (payload.supporter_email || '').toLowerCase().trim();
+    
+    // Trakteer may send email in different fields depending on API version
+    // Cast through 'unknown' to access dynamic fields safely
+    const rawPayload = payload as unknown as Record<string, any>;
+    const supporterEmail = (
+      payload.supporter_email || 
+      rawPayload.email ||
+      rawPayload.supporter_info?.email ||
+      rawPayload.unit_price?.supporter_email ||
+      ''
+    ).toString().toLowerCase().trim();
+    
     const transactionId = payload.id || payload.order_id || `TRX-${Date.now()}`;
     
-    console.log(`Processing: ${acronCount} ACRON for ${supporterEmail}`);
+    console.log(`Processing: ${acronCount} ACRON for email: "${supporterEmail}" (name: ${supporterName})`);
+    console.log('Raw payload fields:', Object.keys(payload));
     
     if (!supporterEmail) {
       console.error('No supporter email provided');

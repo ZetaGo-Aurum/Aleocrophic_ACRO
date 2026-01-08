@@ -32,27 +32,43 @@ export function useNotification() {
   }, []);
 
   const sendNotification = useCallback((title: string, body: string, icon: string = '/acron.png') => {
-    if (typeof window === 'undefined') return false;
+    console.log('[Notification] sendNotification called:', { title, body });
+    
+    if (typeof window === 'undefined') {
+      console.warn('[Notification] window is undefined (SSR)');
+      return false;
+    }
     
     // Construct absolute URL for icon (required for some browsers/OS)
     const iconUrl = icon.startsWith('http') ? icon : `${window.location.origin}${icon}`;
+    console.log('[Notification] Icon URL:', iconUrl);
 
     if (!('Notification' in window)) {
-        console.warn('This browser does not support desktop notification');
-        return false;
+      console.warn('[Notification] This browser does not support desktop notification');
+      return false;
     }
 
-    if (Notification.permission === 'granted') {
+    // Check permission at call time (not cached state)
+    const currentPermission = Notification.permission;
+    console.log('[Notification] Current permission:', currentPermission);
+    
+    if (currentPermission === 'granted') {
       try {
-        new Notification(title, { body, icon: iconUrl });
+        console.log('[Notification] Creating notification...');
+        const n = new Notification(title, { body, icon: iconUrl });
+        n.onclick = () => { window.focus(); n.close(); };
+        console.log('[Notification] ✓ Notification created successfully');
         return true;
       } catch (e) {
-        console.error('Notification creation failed', e);
+        console.error('[Notification] Creation failed:', e);
         return false;
       }
+    } else if (currentPermission === 'denied') {
+      console.warn('[Notification] Permission denied by user');
+      return false;
     } else {
-       console.warn('Notification permission not granted');
-       return false;
+      console.warn('[Notification] Permission not yet granted (default)');
+      return false;
     }
   }, []);
 

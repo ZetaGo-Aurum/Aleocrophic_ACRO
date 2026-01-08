@@ -285,22 +285,23 @@ export default function Home() {
 
       {/* Navigation (Desktop & Mobile Header) */}
       <nav 
-        className="nav-glass transition-all duration-300 top-0 h-[68px] flex items-center justify-between"
+        className="nav-glass transition-all duration-300 top-0 h-[68px] flex items-center justify-between px-4"
         style={{ marginTop: 0 }}
       >
-        <div className="nav-brand flex items-center h-full pl-4 space-x-4">
-          <button className="md:hidden text-white mr-4 text-2xl" onClick={() => setIsSidebarOpen(true)}>☰</button>
+        <div className="nav-brand flex items-center h-full space-x-2 md:space-x-4 flex-shrink-0">
+          <button className="md:hidden text-white text-2xl flex-shrink-0" onClick={() => setIsSidebarOpen(true)}>☰</button>
+          
+          <img src="/acron.png" alt="ACRON" className="nav-logo h-8 md:h-10 w-auto flex-shrink-0" />
+          <span className="nav-title gradient-text text-lg md:text-xl font-bold truncate max-w-[100px] md:max-w-none">ACRON</span>
           
           {permission === 'default' && (
              <button 
                onClick={requestPermission}
-               className="hidden md:block text-xs bg-teal-500/20 text-teal-400 border border-teal-500/50 px-3 py-1 rounded-full animate-pulse hover:bg-teal-500/40 transition"
+               className="hidden md:block text-xs bg-teal-500/20 text-teal-400 border border-teal-500/50 px-3 py-1 rounded-full animate-pulse hover:bg-teal-500/40 transition flex-shrink-0"
              >
                🔔 Enable Alerts
              </button>
           )}
-          <img src="/acron.png" alt="ACRON" className="nav-logo h-10 w-auto" />
-          <span className="nav-title gradient-text ml-2">ACRON</span>
         </div>
         
         <div className="nav-menu flex items-center h-full pr-4 hidden md:flex">

@@ -102,16 +102,12 @@ export default function BroadcastManager() {
           discount_linked: true
         }, { merge: true });
         alert('Broadcast saved AND linked to Global Discount Timer! 🔗');
-      } else {
-        setIsEditing(false);
-        setCurrentBroadcast({});
-        // alert('Broadcast saved successfully');
       }
       
-      if (!currentBroadcast.linkDiscount) {
-         setIsEditing(false);
-         setCurrentBroadcast({});
-      }
+      // Always close form after successful save
+      setIsEditing(false);
+      setCurrentBroadcast({});
+      
     } catch (error) {
       console.error('Error saving broadcast:', error);
       alert('Failed to save broadcast');
