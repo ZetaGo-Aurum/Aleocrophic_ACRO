@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
     const pricingDoc = await pricingRef.get();
     
     let Config = {
-      proplus_price: 1,
-      ultimate_price: 2,
+      proplus_price: 25,   // PRO+ = 25 ACRON
+      ultimate_price: 50,  // ULTIMATE = 50 ACRON
       discount_active: false,
       discount_percent: 0,
       discount_tiers: [] as string[]
@@ -35,13 +35,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate Final Price (ALWAYS BASE PRICE)
-    // Discount now only applies to the cash price on Trakteer, not the ACRON amount deducted.
+    // Calculate Final Price
+    // Base ACRON quantity
     let basePrice = (tier === 'ultimate') ? Config.ultimate_price : Config.proplus_price;
     let finalPrice = basePrice;
     
-    // NOTE: Previous discount logic removed as per request. 
-    // ACRON cost remains fixed (1 or 2). Discount is handled externally via Trakteer price adjustment.
+    // Apply discount to ACRON QUANTITY if active (must be integer)
+    if (Config.discount_active && Config.discount_tiers.includes(tier)) {
+      const discountMultiplier = (100 - Config.discount_percent) / 100;
+      finalPrice = Math.max(0, Math.floor(basePrice * discountMultiplier));
+    }
 
     console.log(`[Transaction] Processing ${tier} for ${uid}. Cost: ${finalPrice} ACRON`);
 

@@ -49,8 +49,8 @@ export default function AdminDashboard() {
       } else {
         // Initialize if not exists
         const initialConfig = {
-          proplus_price: 1,
-          ultimate_price: 2,
+          proplus_price: 25,   // PRO+ = 25 ACRON = Rp 75,000
+          ultimate_price: 50,  // ULTIMATE = 50 ACRON = Rp 150,000
           discount_active: false,
           discount_percent: 0,
           discount_tiers: []

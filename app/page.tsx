@@ -121,16 +121,26 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [broadcasts]);
 
-  const getPriceDetails = (tier: string, baseAcron: number, baseRp: number) => {
+  // PRICING CONSTANTS
+  const ACRON_PRICE_RP = 3000; // Rp 3,000 per ACRON
+  const PROPLUS_BASE_ACRON = 25;  // PRO+ = 25 ACRON = Rp 75,000
+  const ULTIMATE_BASE_ACRON = 50; // ULTIMATE = 50 ACRON = Rp 150,000
+
+  const getPriceDetails = (tier: string, baseAcron: number) => {
+    const baseRp = baseAcron * ACRON_PRICE_RP;
+    
     if (pricingConfig?.discount_active && pricingConfig?.discount_tiers?.includes(tier)) {
         const percent = pricingConfig.discount_percent || 0;
-        // Discount affects RP price (Fiat), but ACRON quantity remains fixed.
-        // User buys ACRON cheaper at Trakteer, but pays full ACRON amount here.
-        const discountRp = baseRp * ((100 - percent) / 100);
+        
+        // Discount applies to ACRON QUANTITY (must be integer, use floor)
+        const discountedAcron = Math.max(0, Math.floor(baseAcron * ((100 - percent) / 100)));
+        const discountedRp = discountedAcron * ACRON_PRICE_RP;
+        
         return {
-            acron: baseAcron, // Fixed (1 or 2)
-            rp: discountRp.toLocaleString('id-ID'),
+            acron: discountedAcron,
+            rp: discountedRp.toLocaleString('id-ID'),
             originalRp: baseRp.toLocaleString('id-ID'),
+            originalAcron: baseAcron,
             isDiscounted: true,
             percent: percent
         };
@@ -139,13 +149,14 @@ export default function Home() {
         acron: baseAcron,
         rp: baseRp.toLocaleString('id-ID'),
         originalRp: null,
+        originalAcron: baseAcron,
         isDiscounted: false,
         percent: 0
     };
   };
 
-  const proPrice = getPriceDetails('proplus', 1, 62500);
-  const ultPrice = getPriceDetails('ultimate', 2, 125000);
+  const proPrice = getPriceDetails('proplus', PROPLUS_BASE_ACRON);
+  const ultPrice = getPriceDetails('ultimate', ULTIMATE_BASE_ACRON);
 
 
 
