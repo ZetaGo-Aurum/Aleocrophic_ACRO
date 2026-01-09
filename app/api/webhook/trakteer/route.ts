@@ -91,11 +91,15 @@ export async function POST(request: NextRequest) {
     const newBalance = (userData.acronBalance || 0) + acronCount;
     
     // Create license if this is a purchase (check message for tier)
+    // Updated thresholds: PRO+ = 25 ACRON, ULTIMATE = 50 ACRON
     const message = (payload.supporter_message || '').toLowerCase();
     let license = null;
     
+    const PROPLUS_THRESHOLD = 25;
+    const ULTIMATE_THRESHOLD = 50;
+    
     if (message.includes('ultimate') || message.includes('ult')) {
-      if (acronCount >= 2) {
+      if (acronCount >= ULTIMATE_THRESHOLD) {
         license = {
           key: `ACRO-ULT-${uuidv4().substring(0, 8).toUpperCase()}`,
           tier: 'ultimate',
@@ -106,7 +110,7 @@ export async function POST(request: NextRequest) {
         };
       }
     } else if (message.includes('pro+') || message.includes('proplus') || message.includes('pro')) {
-      if (acronCount >= 1) {
+      if (acronCount >= PROPLUS_THRESHOLD) {
         license = {
           key: `ACRO-PP-${uuidv4().substring(0, 8).toUpperCase()}`,
           tier: 'proplus',
