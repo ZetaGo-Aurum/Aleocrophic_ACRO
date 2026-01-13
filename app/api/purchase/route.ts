@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       const userData = userDoc.data();
       const currentBalance = userData?.acronBalance || 0;
 
+      console.log(`[Transaction] User ${uid} - Current Balance: ${currentBalance}, Required: ${finalPrice}`);
+
       if (currentBalance < finalPrice) {
         throw new Error(`Insufficient balance. Required: ${finalPrice} ACRON, Available: ${currentBalance} ACRON`);
       }
@@ -79,14 +81,17 @@ export async function POST(request: NextRequest) {
         transactionId: `PUR-${Date.now()}`
       };
 
-      // Update User Data
-      // Use toFixed(4) then Number() to handle floating point math cleanly for currency
-      const newBalance = Number((currentBalance - finalPrice).toFixed(4));
+      // Calculate new balance (ensure integer for ACRON)
+      const newBalance = Math.max(0, currentBalance - finalPrice);
 
+      console.log(`[Transaction] Deducting ${finalPrice} ACRON. New Balance: ${newBalance}`);
+
+      // Update User Data - Use set with merge for reliability
       t.update(userRef, {
         acronBalance: newBalance,
         licenses: FieldValue.arrayUnion(newLicense),
-        lastPurchase: new Date().toISOString()
+        lastPurchase: new Date().toISOString(),
+        tier: tier // Also update user's tier
       });
 
       // Also create a standalone license document for easy validation
@@ -97,10 +102,12 @@ export async function POST(request: NextRequest) {
         userEmail: userData?.email || 'unknown'
       });
 
-      return { newBalance, license: newLicense };
+      console.log(`[Transaction] Balance will be updated from ${currentBalance} to ${newBalance}`);
+
+      return { newBalance, license: newLicense, previousBalance: currentBalance };
     });
 
-    console.log(`✓ Purchase successful for ${uid}. New balance: ${result.newBalance}`);
+    console.log(`✓ Purchase successful for ${uid}. Balance: ${result.previousBalance} → ${result.newBalance}`);
 
     return NextResponse.json({
       success: true,

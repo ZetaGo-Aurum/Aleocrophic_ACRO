@@ -463,13 +463,13 @@ export default function Home() {
               </div>
               
               <ul className="feature-list">
-                <li>1000+ Pre-installed Software</li>
-                <li>XFCE Desktop Environment</li>
-                <li>PulseAudio (Sound Works!)</li>
-                <li>VNC Server Ready</li>
-                <li>Storage Sharing</li>
-                <li>neofetch ACRO Branding</li>
-                <li>Basic GPU Support</li>
+                <li>📦 50 Essential Packages</li>
+                <li>🖥️ XFCE Desktop (Basic)</li>
+                <li>🔊 PulseAudio Ready</li>
+                <li>📡 VNC Server</li>
+                <li>💾 Storage Sharing</li>
+                <li>🆓 Community Support</li>
+                <li>⚠️ No vGPU / Performance Tweaks</li>
               </ul>
               
               <div className="code-block">
@@ -517,11 +517,12 @@ export default function Home() {
               </div>
               
               <ul className="feature-list">
-                <li>🎮 GPU Gaming Optimization</li>
-                <li>🕹️ 8 Proot-Compatible Emulators</li>
-                <li>🍷 Wine Gaming (x86 Games on ARM)</li>
-                <li>🎨 15+ Premium Dark Themes</li>
-                <li>⚡ Performance & RAM Optimizer</li>
+                <li>📦 <strong>500 Software Packages</strong></li>
+                <li>🎮 vGPU Gaming Optimization</li>
+                <li>⚡ Performance & RAM Tweaks</li>
+                <li>🕹️ 8 Gaming Emulators</li>
+                <li>🍷 Wine (Windows Games)</li>
+                <li>🎨 15+ Premium Themes</li>
                 <li>📺 OBS Streaming Ready</li>
                 <li>📞 Email Support (24h)</li>
               </ul>
@@ -571,13 +572,16 @@ export default function Home() {
               </div>
               
               <ul className="feature-list">
+                <li>📦 <strong>1000+ Software Packages</strong></li>
                 <li>✨ All PRO+ Features Included</li>
-                <li>🖥️ XFCE or GNOME Desktop Choice</li>
-                <li>🔓 100+ Hacking Tools (nmap, sqlmap, metasploit)</li>
+                <li>🚀 Super GPU Config (Max Performance)</li>
+                <li>⚡ Super Performance Tweaks</li>
+                <li>🖥️ XFCE or GNOME Desktop</li>
+                <li>🔓 100+ Security/Hacking Tools</li>
                 <li>🛡️ Privacy Suite (Tor, ProxyChains)</li>
-                <li>💻 Developer Pro Pack (Docker, Cloud CLI)</li>
-                <li>🎬 Content Creator Bundle (Kdenlive, OBS)</li>
-                <li>🔧 Forensics & Reverse Engineering</li>
+                <li>💻 Developer Pack (Docker, CLI Tools)</li>
+                <li>🎬 Content Creator (Kdenlive, OBS)</li>
+                <li>🐛 All Bugs Fixed + Optimized</li>
                 <li>👑 VIP Support (6h) + Lifetime Updates</li>
               </ul>
               
